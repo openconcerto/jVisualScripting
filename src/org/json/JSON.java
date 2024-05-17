@@ -1,0 +1,163 @@
+/*
+ * Copyright (C) 2010 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
+package org.json;
+
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.nio.charset.StandardCharsets;
+
+public class JSON {
+
+    private JSON() {
+        // Nothing
+    }
+
+    /**
+     * Parse String to JSONObject or JSONArray
+     * 
+     * @param json the json String to parse
+     * 
+     * @return JSONObject or JSONArray (or null if String is empty)
+     * @throws JSONException if json is not correct
+     */
+    public static Object parse(String json) throws JSONException {
+        if (json.isEmpty()) {
+            return null;
+        }
+        if (json.charAt(0) == '[') {
+            return new JSONArray(json);
+        }
+        return new JSONObject(json);
+    }
+
+    public static Object parse(InputStream inputStream) throws IOException {
+        InputStream stream = inputStream;
+        if (!(stream instanceof BufferedInputStream)) {
+            stream = new BufferedInputStream(stream);
+        }
+        final int bufferSize = 81920;
+        final char[] buffer = new char[bufferSize];
+        final StringBuilder out = new StringBuilder();
+        final Reader in = new InputStreamReader(stream, StandardCharsets.UTF_8);
+        for (int numRead; (numRead = in.read(buffer, 0, buffer.length)) > 0;) {
+            out.append(buffer, 0, numRead);
+        }
+        return parse(out.toString());
+    }
+
+    /**
+     * Returns the input if it is a JSON-permissible value; throws otherwise.
+     */
+    static double checkDouble(double d) {
+        if (Double.isInfinite(d) || Double.isNaN(d)) {
+            throw new JSONException("Forbidden numeric value: " + d);
+        }
+        return d;
+    }
+
+    static Double checkDouble(Double d) {
+        if (d.isInfinite() || d.isNaN()) {
+            throw new JSONException("Forbidden numeric value: " + d);
+        }
+        return d;
+    }
+
+    static Boolean toBoolean(Object value) {
+        if (value instanceof Boolean) {
+            return (Boolean) value;
+        } else if (value instanceof String) {
+            String stringValue = (String) value;
+            if ("true".equalsIgnoreCase(stringValue)) {
+                return true;
+            } else if ("false".equalsIgnoreCase(stringValue)) {
+                return false;
+            }
+        }
+        return null;
+    }
+
+    static Double toDouble(Object value) {
+        if (value instanceof Double) {
+            return (Double) value;
+        } else if (value instanceof Number) {
+            return ((Number) value).doubleValue();
+        } else if (value instanceof String) {
+            try {
+                return Double.valueOf((String) value);
+            } catch (NumberFormatException ignored) {
+                // Nothing
+            }
+        }
+        return null;
+    }
+
+    static Integer toInteger(Object value) {
+        if (value instanceof Integer) {
+            return (Integer) value;
+        } else if (value instanceof Number) {
+            return ((Number) value).intValue();
+        } else if (value instanceof String) {
+            try {
+                return (int) Double.parseDouble((String) value);
+            } catch (NumberFormatException ignored) {
+                // Nothing
+            }
+        }
+        return null;
+    }
+
+    static Long toLong(Object value) {
+        if (value instanceof Long) {
+            return (Long) value;
+        } else if (value instanceof Number) {
+            return ((Number) value).longValue();
+        } else if (value instanceof String) {
+            try {
+                return (long) Double.parseDouble((String) value);
+            } catch (NumberFormatException ignored) {
+                // Nothing
+            }
+        }
+        return null;
+    }
+
+    static String toString(Object value) {
+        if (value instanceof String) {
+            return (String) value;
+        } else if (value != null) {
+            return String.valueOf(value);
+        }
+        return null;
+    }
+
+    public static JSONException typeMismatch(Object indexOrName, Object actual, String requiredType) {
+        if (actual == null) {
+            throw new JSONException("Value at " + indexOrName + " is null.");
+        } else {
+            throw new JSONException("Value " + actual + " at " + indexOrName + " of type " + actual.getClass().getName() + " cannot be converted to " + requiredType);
+        }
+    }
+
+    public static JSONException typeMismatch(Object actual, String requiredType) throws JSONException {
+        if (actual == null) {
+            throw new JSONException("Value is null.");
+        } else {
+            throw new JSONException("Value " + actual + " of type " + actual.getClass().getName() + " cannot be converted to " + requiredType);
+        }
+    }
+
+}

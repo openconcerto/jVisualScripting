@@ -22,4 +22,22 @@ Additionally, the engine can be embedded in your Java application or run workflo
 - **Export/Import**: Export workflows as compressed binary file or JSON for easy sharing and version control.
 - **Integration**: Seamlessly integrates with the workflow engine for direct deployment and testing.
 
+![Screenshot](hello.png?raw=true "Title")
+
+# Execution of a workflow in command line 
+```
+java -jar jVisualScripting-1.0.jar helloworld.jvsz
+```
+
+# Embbeding jVisualScript
+
+Just add jVisualScripting-1.0.jar in your classpath.
+
+You can build a workflow using the EventGraph class.
+
+EventGraph can be created programmaticaly or loaded from a file.
+
+
+
+
 

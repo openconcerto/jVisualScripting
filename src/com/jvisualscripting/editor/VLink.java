@@ -6,16 +6,13 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.geom.CubicCurve2D;
 
-import com.jvisualscripting.DataPin;
 import com.jvisualscripting.ExecutionPin;
-import com.jvisualscripting.FlowNode;
 import com.jvisualscripting.Link;
 import com.jvisualscripting.Node;
 import com.jvisualscripting.Pin;
 import com.jvisualscripting.variable.BooleanPin;
 import com.jvisualscripting.variable.IntegerPin;
 import com.jvisualscripting.variable.StringPin;
-import com.jvisualscripting.variable.StringVariable;
 
 public class VLink {
 
@@ -45,7 +42,7 @@ public class VLink {
         return color;
     }
 
-    public void paint(Graphics g) {
+    public void paint(Graphics g, boolean full) {
         final Graphics2D g2 = (Graphics2D) g;
         final Pin p1 = link.getFrom();
         final Pin p2 = link.getTo();

@@ -26,6 +26,7 @@ public class FloatVariableEditor implements NodeEditor {
     @Override
     public JPanel createEditor(EventGraphEditorPanel panel, Node n) {
         final JPanel p = new JPanel();
+        p.setOpaque(false);
         p.setLayout(new GridBagLayout());
         final GridBagConstraints c = new GridBagConstraints();
         c.insets = new Insets(2, 4, 2, 4);

@@ -11,7 +11,6 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Toolkit;
-import java.awt.Window;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.UnsupportedFlavorException;
@@ -76,7 +75,8 @@ public class EventGraphEditorPanel extends JPanel implements Scrollable {
     protected int dClickY;
     protected boolean moving;
     protected VNode movingNode;
-    protected int previousX, previousY;
+    protected int previousX;
+    protected int previousY;
     protected long previousTime;
     protected boolean glued;
     protected int highlightGlueX = Integer.MIN_VALUE;
@@ -94,6 +94,8 @@ public class EventGraphEditorPanel extends JPanel implements Scrollable {
     private List<NodeSelectionListener> nListeners = new ArrayList<>();
     private List<GraphChangeListener> graphChangeListeners = new ArrayList<>();
 
+    private long lastTimeScrollRect = 0;
+
     public EventGraphEditorPanel(EventGraph g) {
 
         setGraph(g);
@@ -104,7 +106,6 @@ public class EventGraphEditorPanel extends JPanel implements Scrollable {
         } catch (FontFormatException | IOException e) {
             throw new IllegalStateException(e);
         }
-        // this.fontBase = new Font("Segoe UI", Font.PLAIN, 90);
 
         this.fontNode = this.fontBase.deriveFont(14f);
         this.fontLane = this.fontBase.deriveFont(18f);
@@ -172,6 +173,7 @@ public class EventGraphEditorPanel extends JPanel implements Scrollable {
 
             @Override
             public void mousePressed(MouseEvent e) {
+                grabFocus();
                 EventGraphEditorPanel.this.origin = new Point(e.getPoint());
                 EventGraphEditorPanel.this.originButton = e.getButton();
                 EventGraphEditorPanel.this.previousX = e.getX();
@@ -212,16 +214,10 @@ public class EventGraphEditorPanel extends JPanel implements Scrollable {
                     if (pin != null) {
                         EventGraphEditorPanel.this.selectedPins.add(pin);
                         EventGraphEditorPanel.this.selectedPinLocation = e.getPoint();
-                        if (pin.getConnectedPin() != null) {
-                            /// System.err.println("selected pin:" + pin + " connected");
-                        } else {
-                            // System.err.println("selected pin:" + pin + " not connected");
-
+                        if (pin.getConnectedPin() == null) {
                             Pin from;
                             Pin to;
                             if (pin.getMode().equals(PinMode.OUTPUT)) {
-                                // System.err.println("EventGraphEditorPanel.EventGraphEditorPanel(...).new
-                                // MouseListener() {...}.mousePressed() out is temp");
                                 from = pin;
                                 to = new TempPin(e.getX(), e.getY(), PinMode.INPUT);
                             } else {
@@ -236,7 +232,9 @@ public class EventGraphEditorPanel extends JPanel implements Scrollable {
                         l.nodeSelected(null);
                     }
                 }
-
+                if (e.isPopupTrigger()) {
+                    showMenu(e.getX(), e.getY());
+                }
             }
 
         });
@@ -259,7 +257,7 @@ public class EventGraphEditorPanel extends JPanel implements Scrollable {
 
                 if (EventGraphEditorPanel.this.origin != null && !EventGraphEditorPanel.this.moving && EventGraphEditorPanel.this.selectedPinLocation == null
                         && EventGraphEditorPanel.this.temporyLink == null && EventGraphEditorPanel.this.originButton == MouseEvent.BUTTON1) {
-                    // Move wiew
+                    // Move wiew with drag & left mouse pressed
                     JViewport viewPort = (JViewport) SwingUtilities.getAncestorOfClass(JViewport.class, EventGraphEditorPanel.this);
                     if (viewPort != null) {
                         int deltaX = EventGraphEditorPanel.this.origin.x - e.getX();
@@ -268,19 +266,23 @@ public class EventGraphEditorPanel extends JPanel implements Scrollable {
                         Rectangle view = viewPort.getViewRect();
                         view.x += deltaX;
                         view.y += deltaY;
-
-                        scrollRectToVisible(view);
+                        EventGraphEditorPanel.super.scrollRectToVisible(view);
                     }
                 } else {
                     // User is moving a node or a link
                     JViewport viewPort = (JViewport) SwingUtilities.getAncestorOfClass(JViewport.class, EventGraphEditorPanel.this);
                     if (viewPort != null && !e.isPopupTrigger() && EventGraphEditorPanel.this.originButton == MouseEvent.BUTTON1) {
-                        Rectangle view = viewPort.getViewRect();
-                        view.x = e.getX() - 100;
-                        view.y = e.getY() - 100;
-                        view.width = 200;
-                        view.height = 200;
-                        scrollRectToVisible(view);
+                        Rectangle viewRect = viewPort.getViewRect();
+                        viewRect.x = e.getX() - 100;
+                        viewRect.y = e.getY() - 100;
+                        viewRect.width = 200;
+                        viewRect.height = 200;
+                        // FIXME : scrollRectToVisible is not working great...
+                        // TODO : detect if the mouse is at the left/right/top/bottom border and use
+                        // a timer to update the viewRect location
+                        // viewRect.x += (dx > 0) ? SCROLL_SPEED : -SCROLL_SPEED;
+                        // viewRect.y += (dy > 0) ? SCROLL_SPEED : -SCROLL_SPEED;
+                        // scrollRectToVisible(view);
                     }
                 }
             }
@@ -360,13 +362,9 @@ public class EventGraphEditorPanel extends JPanel implements Scrollable {
 
                     float v = dx * dx + dy * dy;
                     if (v > 200 && EventGraphEditorPanel.this.temporyLink == null) {
-
-                        // System.err.println("EventGraphEditorPanel.EventGraphEditorPanel()
-                        // DETACH");
                         VLink l = getVLink(EventGraphEditorPanel.this.selectedPinLocation.x, EventGraphEditorPanel.this.selectedPinLocation.y);
                         if (l != null) {
                             // User is detaching a link
-                            // System.err.println("Disable : " + l);
                             EventGraphEditorPanel.this.disabledLink = l;
                             l.setEnabled(false);
                             Pin pin = getPinUnder(EventGraphEditorPanel.this.selectedPinLocation.x, EventGraphEditorPanel.this.selectedPinLocation.y);
@@ -379,8 +377,6 @@ public class EventGraphEditorPanel extends JPanel implements Scrollable {
                             }
 
                             if (pin.getMode().equals(PinMode.INPUT)) {
-                                // System.err.println("EventGraphEditorPanel.EventGraphEditorPanel(...).new
-                                // MouseListener() {...}.mousePressed() out is temp");
                                 from = p2;
                                 to = new TempPin(x, y, PinMode.OUTPUT);
                                 l.getLink().getTo().setConnectedPin(null);
@@ -418,19 +414,16 @@ public class EventGraphEditorPanel extends JPanel implements Scrollable {
 
             @Override
             public void ancestorRemoved(AncestorEvent event) {
-                // TODO Auto-generated method stub
-
+                // Nothing
             }
 
             @Override
             public void ancestorMoved(AncestorEvent event) {
-                // TODO Auto-generated method stub
-
+                // Nothing
             }
 
             @Override
             public void ancestorAdded(AncestorEvent event) {
-                Window w = (Window) SwingUtilities.getRoot(EventGraphEditorPanel.this);
                 final String UNDO = "Undo action key";
                 final String REDO = "Redo action key";
                 final String DELETE = "delete";
@@ -444,11 +437,7 @@ public class EventGraphEditorPanel extends JPanel implements Scrollable {
                 Action copyAction = new AbstractAction() {
 
                     public void actionPerformed(ActionEvent e) {
-                        try {
-                            copy();
-                        } catch (IOException e1) {
-                            e1.printStackTrace();
-                        }
+                        copy();
                         fireGraphChange();
                     }
                 };
@@ -603,7 +592,6 @@ public class EventGraphEditorPanel extends JPanel implements Scrollable {
                     i.put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 0), RIGHT);
                     i.put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0), UP);
                     i.put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0), DOWN);
-                    // FIXME CTRL X
                     i.put(KeyStroke.getKeyStroke(KeyEvent.VK_C, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()), COPY);
                     i.put(KeyStroke.getKeyStroke(KeyEvent.VK_V, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()), PASTE);
                 }
@@ -636,10 +624,8 @@ public class EventGraphEditorPanel extends JPanel implements Scrollable {
                     }
 
                 } catch (Exception e) {
-                    // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
-                // TODO Auto-generated method stub
                 return super.importData(support);
             }
 
@@ -655,6 +641,18 @@ public class EventGraphEditorPanel extends JPanel implements Scrollable {
 
         });
 
+    }
+
+    @Override
+    public void scrollRectToVisible(Rectangle aRect) {
+        if (System.currentTimeMillis() - this.lastTimeScrollRect > 500) {
+            this.lastTimeScrollRect = System.currentTimeMillis();
+            super.scrollRectToVisible(aRect);
+        }
+    }
+
+    public void scrollRect(Rectangle aRect) {
+        super.scrollRectToVisible(aRect);
     }
 
     protected Lane getLaneUnder(int x, int y) {
@@ -714,7 +712,7 @@ public class EventGraphEditorPanel extends JPanel implements Scrollable {
 
     }
 
-    protected void copy() throws IOException {
+    protected void copy() {
         if (this.selectedNodes.isEmpty()) {
             return;
         }
@@ -897,7 +895,7 @@ public class EventGraphEditorPanel extends JPanel implements Scrollable {
 
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    EventGraphEditorPanel.this.graph.add(new Lane("New lane", Color.ORANGE, (short) (20 * ((int) (y / 20))), (short) 200));
+                    EventGraphEditorPanel.this.graph.add(new Lane("New lane", Color.ORANGE, (short) (20 * (y / 20)), (short) 200));
                     fireGraphChange();
                     repaint();
                 }
@@ -981,20 +979,29 @@ public class EventGraphEditorPanel extends JPanel implements Scrollable {
             });
             popup.add(menuItem);
         }
-
-        JMenuItem mRemove = new JMenuItem("Remove");
-        mRemove.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                remove(node);
-                createCheckPoint();
-                EventGraphEditorPanel.this.repaint();
-
+        if (!this.selectedNodes.isEmpty()) {
+            String remodeActionName = "Remove";
+            if (this.selectedNodes.size() > 1) {
+                remodeActionName = "Remove all";
             }
 
-        });
-        popup.add(mRemove);
+            final JMenuItem mRemove = new JMenuItem(remodeActionName);
+            mRemove.addActionListener(new ActionListener() {
+
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    for (VNode n : EventGraphEditorPanel.this.selectedNodes) {
+                        remove(n);
+                    }
+                    createCheckPoint();
+                    EventGraphEditorPanel.this.repaint();
+
+                }
+
+            });
+            popup.add(mRemove);
+
+        }
         popup.show(this, x, y);
 
     }
@@ -1068,6 +1075,10 @@ public class EventGraphEditorPanel extends JPanel implements Scrollable {
 
     @Override
     public void paintComponent(Graphics g) {
+        paintComponent(g, true);
+    }
+
+    public void paintComponent(Graphics g, boolean full) {
         final Rectangle clipBounds = g.getClipBounds();
         final int clipBoundsMaxX = clipBounds.x + clipBounds.width;
         final int clipBoundsMaxY = clipBounds.y + clipBounds.height;
@@ -1076,33 +1087,34 @@ public class EventGraphEditorPanel extends JPanel implements Scrollable {
         g.setColor(new Color(252, 252, 252));
         g.fillRect(clipBounds.x, clipBounds.y, clipBounds.width, clipBounds.height);
         g.setColor(new Color(230, 240, 252));
-
-        // Horizontal lines
-        for (int y = 0; y < clipBoundsMaxY; y += 20) {
-            if (y < clipBounds.y) {
-                continue;
-            }
-            g.drawLine(clipBounds.x, y, clipBoundsMaxX, y);
-        }
-
-        // Vertical lines
-        for (int x = 0; x < clipBoundsMaxX; x += 20) {
-            if (x < clipBounds.x) {
-                continue;
-            }
-            g.drawLine(x, clipBounds.y, x, clipBoundsMaxY);
-        }
-
-        // Cross
-        g.setColor(new Color(220, 230, 240));
-        for (int y = 0; y < clipBoundsMaxY; y += 20) {
-            if (y < clipBounds.y) {
-                continue;
+        if (full) {
+            // Horizontal lines
+            for (int y = 0; y < clipBoundsMaxY; y += 20) {
+                if (y < clipBounds.y) {
+                    continue;
+                }
+                g.drawLine(clipBounds.x, y, clipBoundsMaxX, y);
             }
 
+            // Vertical lines
             for (int x = 0; x < clipBoundsMaxX; x += 20) {
-                g.drawLine(x - 2, y, x + 2, y);
-                g.drawLine(x, y - 2, x, y + 2);
+                if (x < clipBounds.x) {
+                    continue;
+                }
+                g.drawLine(x, clipBounds.y, x, clipBoundsMaxY);
+            }
+
+            // Cross
+            g.setColor(new Color(220, 230, 240));
+            for (int y = 0; y < clipBoundsMaxY; y += 20) {
+                if (y < clipBounds.y) {
+                    continue;
+                }
+
+                for (int x = 0; x < clipBoundsMaxX; x += 20) {
+                    g.drawLine(x - 2, y, x + 2, y);
+                    g.drawLine(x, y - 2, x, y + 2);
+                }
             }
         }
         Graphics2D g2 = (Graphics2D) g;
@@ -1127,29 +1139,31 @@ public class EventGraphEditorPanel extends JPanel implements Scrollable {
             g.drawString(str, 10 + 4, lane.getY() + stringHeight + 4);
 
         }
-        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
-        g2.setStroke(new BasicStroke(2f));
-        if (this.highlightGlueX > Integer.MIN_VALUE) {
-            g.setColor(new Color(120, 185, 240));
-            g.drawLine(this.highlightGlueX, 0, this.highlightGlueX, this.getHeight());
+        // Glue
+        if (full) {
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
+            g2.setStroke(new BasicStroke(2f));
+            if (this.highlightGlueX > Integer.MIN_VALUE) {
+                g.setColor(new Color(120, 185, 240));
+                g.drawLine(this.highlightGlueX, 0, this.highlightGlueX, this.getHeight());
+            }
+            if (this.highlightGlueY > Integer.MIN_VALUE) {
+                g.setColor(new Color(120, 185, 240));
+                g.drawLine(0, this.highlightGlueY, this.getWidth(), this.highlightGlueY);
+            }
         }
-        if (this.highlightGlueY > Integer.MIN_VALUE) {
-            g.setColor(new Color(120, 185, 240));
-            g.drawLine(0, this.highlightGlueY, this.getWidth(), this.highlightGlueY);
-        }
-
         // Nodes & Links
         g.setFont(this.fontNode);
+
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         for (VNode node : this.vNodes) {
-            node.paint(g, this.selectedNodes.contains(node), this.selectedPins);
+            node.paint(g, this.selectedNodes.contains(node), this.selectedPins, full);
         }
-
         for (VLink link : this.vLinks) {
-            link.paint(g);
+            link.paint(g, full);
         }
         if (this.temporyLink != null) {
-            this.temporyLink.paint(g);
+            this.temporyLink.paint(g, full);
         }
 
     }
@@ -1216,7 +1230,12 @@ public class EventGraphEditorPanel extends JPanel implements Scrollable {
 
     @Override
     public Dimension getPreferredSize() {
-        return new Dimension(2000, 2000);
+        return new Dimension(4000, 2472);
+    }
+
+    @Override
+    public Dimension getMinimumSize() {
+        return new Dimension(4000, 2472);
     }
 
     public void addGraphChangeListener(GraphChangeListener graphChangeListener) {

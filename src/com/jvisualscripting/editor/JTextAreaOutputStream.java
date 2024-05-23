@@ -19,7 +19,7 @@ public class JTextAreaOutputStream extends OutputStream {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                destination.append(text);
+                JTextAreaOutputStream.this.destination.append(text);
             }
         });
     }

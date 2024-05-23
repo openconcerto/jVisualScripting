@@ -291,6 +291,7 @@ public class EventGraph implements Externalizable {
         for (int i = 0; i < laneCount; i++) {
             Lane lane = new Lane();
             lane.readExternal(in);
+            this.lanes.add(lane);
         }
 
     }

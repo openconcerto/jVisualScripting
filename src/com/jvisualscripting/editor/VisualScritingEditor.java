@@ -8,6 +8,10 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.AdjustmentEvent;
+import java.awt.event.AdjustmentListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -19,6 +23,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.ExecutionException;
 import java.util.prefs.Preferences;
 
+import javax.accessibility.AccessibleContext;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
@@ -34,8 +39,6 @@ import javax.swing.SwingWorker;
 import javax.swing.UIManager;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
-import org.json.JSONObject;
-
 import com.jvisualscripting.Engine;
 import com.jvisualscripting.EventGraph;
 import com.jvisualscripting.EventGraphListener;
@@ -45,6 +48,8 @@ import com.jvisualscripting.editor.editors.ExternalCommandEditor;
 import com.jvisualscripting.editor.editors.FileSaveStrinEditor;
 import com.jvisualscripting.editor.editors.FloatSplitterEditor;
 import com.jvisualscripting.editor.editors.FloatVariableEditor;
+import com.jvisualscripting.editor.editors.IntegerAdderEditor;
+import com.jvisualscripting.editor.editors.IntegerMultiplierEditor;
 import com.jvisualscripting.editor.editors.IntegerSplitterEditor;
 import com.jvisualscripting.editor.editors.IntegerVariableEditor;
 import com.jvisualscripting.editor.editors.PrintEditor;
@@ -58,7 +63,9 @@ import com.jvisualscripting.function.ExternalCommand;
 import com.jvisualscripting.function.Print;
 import com.jvisualscripting.variable.FloatSplitter;
 import com.jvisualscripting.variable.FloatVariable;
+import com.jvisualscripting.variable.IntegerAdder;
 import com.jvisualscripting.variable.IntegerFormatter;
+import com.jvisualscripting.variable.IntegerMultiplier;
 import com.jvisualscripting.variable.IntegerSplitter;
 import com.jvisualscripting.variable.IntegerVariable;
 import com.jvisualscripting.variable.StringLength;
@@ -70,6 +77,9 @@ import com.jvisualscripting.variable.StringVariable;
 // TODO : node : endline String
 // TODO : node : load file line/line
 // TODO : JSOUP
+// TODO : JMenu
+// TODO : Step
+// TODO : Speed of move
 
 public class VisualScritingEditor extends JPanel {
 
@@ -80,6 +90,7 @@ public class VisualScritingEditor extends JPanel {
     private final EventGraphEditorPanel editor = new EventGraphEditorPanel(new EventGraph());
     private File loadedFile;
     private Engine engine;
+    private SidePanel sidePanel;
 
     public VisualScritingEditor(final Engine engine) {
         this.engine = engine;
@@ -113,20 +124,64 @@ public class VisualScritingEditor extends JPanel {
         this.editor.registerNodeEditor(StringSplitter.class, StringSplitterEditor.class);
         this.editor.registerNodeEditor(IntegerSplitter.class, IntegerSplitterEditor.class);
         this.editor.registerNodeEditor(FloatSplitter.class, FloatSplitterEditor.class);
+        this.editor.registerNodeEditor(IntegerAdder.class, IntegerAdderEditor.class);
+        this.editor.registerNodeEditor(IntegerMultiplier.class, IntegerMultiplierEditor.class);
 
         JTextArea area = new JTextArea(1, 20);
 
         JSplitPane split = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
 
-        JSplitPane split2 = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
-        split2.setLeftComponent(new JScrollPane(this.editor));
-        split2.setRightComponent(new JLabel());
+        JSplitPane split2 = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT) {
+            @Override
+            public AccessibleContext getAccessibleContext() {
+                return new AccessibleJSplitPane() {
+                    @Override
+                    public Number getMinimumAccessibleValue() {
+                        return 50;
+                    }
+
+                };
+            }
+
+        };
+        final JScrollPane scroll = new JScrollPane(this.editor);
+        split2.setLeftComponent(scroll);
+        this.sidePanel = new SidePanel(this.editor, new NodeListPanel(Engine.getDefault()));
+        split2.setRightComponent(this.sidePanel);
         split2.setDividerLocation(900);
         split.setLeftComponent(split2);
         split.setRightComponent(new JScrollPane(area));
         split.setDividerLocation(730);
         this.add(split, BorderLayout.CENTER);
 
+        final AdjustmentListener l = new AdjustmentListener() {
+
+            @Override
+            public void adjustmentValueChanged(AdjustmentEvent e) {
+                VisualScritingEditor.this.sidePanel.setRect(scroll.getHorizontalScrollBar().getValue(), scroll.getVerticalScrollBar().getValue(), scroll.getVisibleRect().width,
+                        scroll.getVisibleRect().height);
+            }
+        };
+        scroll.getHorizontalScrollBar().addAdjustmentListener(l);
+        scroll.getVerticalScrollBar().addAdjustmentListener(l);
+        this.sidePanel.setRect(scroll.getHorizontalScrollBar().getValue(), scroll.getVerticalScrollBar().getValue(), scroll.getVisibleRect().width, scroll.getVisibleRect().height);
+        split2.addPropertyChangeListener(new PropertyChangeListener() {
+
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                SwingUtilities.invokeLater(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        // invokeLater is required here
+                        VisualScritingEditor.this.sidePanel.setRect(scroll.getHorizontalScrollBar().getValue(), scroll.getVerticalScrollBar().getValue(), scroll.getVisibleRect().width,
+                                scroll.getVisibleRect().height);
+
+                    }
+                });
+
+            }
+        });
         System.setOut(new PrintStream(new JTextAreaOutputStream(area)));
 
         //
@@ -164,10 +219,8 @@ public class VisualScritingEditor extends JPanel {
                                 JOptionPane.showMessageDialog(VisualScritingEditor.this, "Error during execution");
                             }
                         } catch (InterruptedException e) {
-                            // TODO Auto-generated catch block
                             e.printStackTrace();
                         } catch (ExecutionException e) {
-                            // TODO Auto-generated catch block
                             e.printStackTrace();
                         }
                         playButton.setEnabled(true);
@@ -253,14 +306,12 @@ public class VisualScritingEditor extends JPanel {
             }
         });
 
-        final NodeListPanel nodeList = new NodeListPanel(Engine.getDefault());
-
         this.editor.addNodeSelectionListener(new NodeSelectionListener() {
 
             @Override
             public void nodeSelected(Node n) {
                 if (n == null) {
-                    setRightComponent(nodeList);
+                    VisualScritingEditor.this.sidePanel.showOnlyNodeList();
                 } else {
                     Class<? extends NodeEditor> c = VisualScritingEditor.this.editor.getEditor(n.getClass());
                     if (c != null) {
@@ -288,10 +339,11 @@ public class VisualScritingEditor extends JPanel {
 
                             rPanel.add(p, constraints);
                             JPanel spacer = new JPanel();
+                            spacer.setOpaque(false);
                             constraints.gridy++;
                             constraints.weighty++;
                             rPanel.add(spacer, constraints);
-                            setRightComponent(rPanel);
+                            VisualScritingEditor.this.sidePanel.showEditor("Selected Node", rPanel);
 
                         } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e1) {
                             // TODO Auto-generated catch block
@@ -299,7 +351,7 @@ public class VisualScritingEditor extends JPanel {
                         }
 
                     } else {
-                        setRightComponent(nodeList);
+                        VisualScritingEditor.this.sidePanel.showOnlyNodeList();
                     }
 
                 }
@@ -307,9 +359,8 @@ public class VisualScritingEditor extends JPanel {
             }
 
             private void setRightComponent(JComponent c) {
-                int d = split2.getDividerLocation();
-                split2.setRightComponent(c);
-                split2.setDividerLocation(d);
+                VisualScritingEditor.this.sidePanel.showEditor("Selected Lane", c);
+
             }
 
             @Override
@@ -424,7 +475,10 @@ public class VisualScritingEditor extends JPanel {
 
                 final VisualScritingEditor visualEditor = new VisualScritingEditor(engine);
                 try {
-                    // visualEditor.load(new File("test.graphz"));
+                    if (args.length > 0) {
+                        String script = args[0];
+                        visualEditor.load(new File(script));
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -450,7 +504,6 @@ public class VisualScritingEditor extends JPanel {
 
             @Override
             public void nodeActivated(Node node) {
-                System.err.println("VisualScritingEditor nodeActivated() " + node);
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
@@ -458,11 +511,7 @@ public class VisualScritingEditor extends JPanel {
                         VisualScritingEditor.this.editor.repaint();
                     }
                 });
-                try {
-                    Thread.sleep(300);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+
             }
 
             @Override
@@ -475,11 +524,7 @@ public class VisualScritingEditor extends JPanel {
                         VisualScritingEditor.this.editor.repaint();
                     }
                 });
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+
             }
         });
     }
@@ -516,8 +561,6 @@ public class VisualScritingEditor extends JPanel {
     public void save(File f) throws IOException {
         this.editor.getGraph().save(f);
         this.saveButton.setEnabled(false);
-        JSONObject obj = this.editor.getGraph().exportGraphAndState(this.engine);
-        System.out.println(obj.toString(2));
     }
 
 }

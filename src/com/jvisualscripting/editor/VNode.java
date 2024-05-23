@@ -54,7 +54,7 @@ public class VNode {
         return color;
     }
 
-    public void paint(Graphics g, boolean selected, Set<Pin> selectedPins) {
+    public void paint(Graphics g, boolean selected, Set<Pin> selectedPins, boolean full) {
 
         int x = node.getX();
         int y = node.getY();
@@ -78,7 +78,8 @@ public class VNode {
         // BG
 
         // Shadow
-        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        if (full)
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         if (selected) {
             g.setColor(SELECTION_COLOR);
         } else {
@@ -91,7 +92,7 @@ public class VNode {
             }
         }
         g2.fillRoundRect(x - 5, y + 1 + -5, width + 10, height - 1 + 10, 7, 7);
-
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         // Background
         g.setColor(getDarkColor());
         g2.fillRoundRect(x, y + 1, width, height - 1, 7, 7);
@@ -109,12 +110,16 @@ public class VNode {
 
         int y2 = getFirstPinY(y);
         g2.setStroke(new BasicStroke(3f));
-        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        if (full) {
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        }
         g2.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_SPEED);
 
         g.setFont(g.getFont().deriveFont(Font.PLAIN, 13));
 
-        if (node.getInputSize() > 0) {
+        if (node.getInputSize() > 0)
+
+        {
             for (Pin p : node.getInputs()) {
                 if (selectedPins.contains(p)) {
 

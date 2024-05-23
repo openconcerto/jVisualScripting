@@ -1,6 +1,8 @@
 package com.jvisualscripting.editor;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -24,11 +26,14 @@ import javax.swing.ListSelectionModel;
 import javax.swing.TransferHandler;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableCellRenderer;
 
 import com.jvisualscripting.Engine;
 import com.jvisualscripting.Node;
 
 public class NodeListPanel extends JPanel {
+    JPanel pSearch = new JPanel();
 
     public NodeListPanel(Engine engine) {
 
@@ -52,18 +57,19 @@ public class NodeListPanel extends JPanel {
         c.insets = new Insets(4, 2, 4, 2);
         final NodeTableModel dm = new NodeTableModel(nodes, engine);
         c.weightx = 1;
-        JLabel title = new JLabel("Available nodes");
-        title.setFont(title.getFont().deriveFont(Font.BOLD));
-        this.add(title, c);
+        this.pSearch.setOpaque(false);
+        this.pSearch.setLayout(new BorderLayout(0, 4));
 
-        JPanel pSearch = new JPanel();
-        pSearch.setLayout(new BorderLayout());
+        final JLabel comp = new JLabel("Drag a node into the editor to add it");
+        comp.setFont(comp.getFont().deriveFont(Font.BOLD));
+        this.pSearch.add(comp, BorderLayout.NORTH);
+
         JTextField search = new JTextField();
-        pSearch.add(new JLabel("Search "), BorderLayout.WEST);
-        pSearch.add(search, BorderLayout.CENTER);
+        this.pSearch.add(new JLabel("Search "), BorderLayout.WEST);
+        this.pSearch.add(search, BorderLayout.CENTER);
         c.gridy++;
 
-        this.add(pSearch, c);
+        this.add(this.pSearch, c);
 
         final SwingThrottle t = new SwingThrottle(100, new Runnable() {
 
@@ -123,12 +129,37 @@ public class NodeListPanel extends JPanel {
 
             }
         });
+        final Color bgColor = new Color(248, 248, 248);
+        JTable table = new JTable(dm) {
 
-        JTable table = new JTable(dm);
+            @Override
+            public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
+                // with alternate background
+                Component comp = super.prepareRenderer(renderer, row, column);
+                if (!comp.getBackground().equals(getSelectionBackground())) {
+                    comp.setBackground(row % 2 == 0 ? bgColor : Color.WHITE);
+                }
+                return comp;
+            }
+
+        };
+
         c.insets = new Insets(0, 0, 0, 0);
         table.setRowHeight((int) (table.getRowHeight() * 1.3));
         table.setAutoCreateRowSorter(true);
         table.setDragEnabled(true);
+        table.setGridColor(bgColor);
+        table.setShowHorizontalLines(false);
+        table.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
+        table.setDefaultRenderer(String.class, new DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+                // Hack to add spacing because setIntercellSpacing is not compatible with alternate
+                // cell background
+                String v = " " + value.toString();
+                return super.getTableCellRendererComponent(table, v, isSelected, hasFocus, row, column);
+            }
+        });
         table.setTransferHandler(new TransferHandler() {
             @Override
             protected Transferable createTransferable(JComponent c) {
@@ -154,7 +185,7 @@ public class NodeListPanel extends JPanel {
                     @Override
                     public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException {
                         System.err.println("NodeListPanel getTransferData()" + flavor);
-                        Class<? extends Node> c = allNodes.get(table.getSelectedRow());
+                        Class<? extends Node> c = nodes.get(table.getSelectedRow());
                         return c.getCanonicalName();
                     }
                 };
@@ -173,7 +204,8 @@ public class NodeListPanel extends JPanel {
 
         });
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-
+        table.getColumnModel().getColumn(0).setMinWidth(100);
+        table.getColumnModel().getColumn(0).setMaxWidth(150);
         c.weighty = 1;
         c.gridy++;
         this.add(new JScrollPane(table), c);

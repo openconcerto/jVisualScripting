@@ -36,14 +36,14 @@ public class FileSaveString extends FlowNode {
         if (inputValue == null)
             return false;
 
-        ioError = false;
+        this.ioError = false;
         try (OutputStream os = new BufferedOutputStream(new FileOutputStream(getFile(), isAppendMode()))) {
             os.write(inputValue.getBytes(StandardCharsets.UTF_8));
         } catch (IOException e) {
-            ioError = true;
+            this.ioError = true;
             e.printStackTrace();
         }
-        return !ioError;
+        return !this.ioError;
     }
 
     @Override
@@ -80,7 +80,7 @@ public class FileSaveString extends FlowNode {
     }
 
     public boolean isAppendMode() {
-        return appendMode;
+        return this.appendMode;
     }
 
     @Override

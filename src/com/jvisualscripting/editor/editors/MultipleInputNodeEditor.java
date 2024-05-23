@@ -14,15 +14,12 @@ import javax.swing.event.ChangeListener;
 
 import com.jvisualscripting.Node;
 import com.jvisualscripting.Pin;
-import com.jvisualscripting.Pin.PinMode;
 import com.jvisualscripting.editor.EventGraphEditorPanel;
 import com.jvisualscripting.editor.NodeEditor;
 import com.jvisualscripting.editor.SwingThrottle;
 import com.jvisualscripting.editor.VLink;
-import com.jvisualscripting.function.ExternalCommand;
-import com.jvisualscripting.variable.StringPin;
 
-public class ExternalCommandEditor implements NodeEditor {
+public abstract class MultipleInputNodeEditor implements NodeEditor {
 
     @Override
     public JPanel createEditor(EventGraphEditorPanel panel, Node n) {
@@ -36,37 +33,37 @@ public class ExternalCommandEditor implements NodeEditor {
         c.fill = GridBagConstraints.NONE;
         c.weightx = 0;
         // Name
-        p.add(new JLabel("Parameters pins", SwingConstants.RIGHT), c);
+        p.add(new JLabel("Input pins", SwingConstants.RIGHT), c);
         c.gridx++;
         c.fill = GridBagConstraints.HORIZONTAL;
         c.weightx = 1;
-        final ExternalCommand v = (ExternalCommand) n;
-        final JSpinner spinner = new JSpinner(new SpinnerNumberModel(v.getOutputSize() - 2, 1, 256, 1));
+
+        final JSpinner spinner = new JSpinner(new SpinnerNumberModel(n.getInputSize(), 2, 256, 1));
         p.add(spinner, c);
 
         final SwingThrottle t = new SwingThrottle(100, new Runnable() {
 
             @Override
             public void run() {
-                int newSize = (Integer) spinner.getValue() + 3;
-                if (v.getInputSize() > newSize) {
-                    int toRemove = v.getInputSize() - newSize;
+                int newSize = (Integer) spinner.getValue();
+                if (n.getInputSize() > newSize) {
+                    int toRemove = n.getInputSize() - newSize;
                     for (int i = 0; i < toRemove; i++) {
-                        Pin pinToRemove = v.getLastInputPin();
+                        Pin pinToRemove = n.getLastInputPin();
                         VLink link = panel.getVLink(pinToRemove);
                         if (link != null) {
                             panel.remove(link);
                         }
-                        v.getInputs().remove(pinToRemove);
+                        n.getInputs().remove(pinToRemove);
                     }
 
-                } else if (v.getInputSize() < newSize) {
-                    int toAdd = newSize - v.getInputSize();
+                } else if (n.getInputSize() < newSize) {
+                    int toAdd = newSize - n.getInputSize();
                     for (int i = 0; i < toAdd; i++) {
-                        v.getInputs().add(new StringPin(v, "Arg " + (v.getInputSize() - 2), PinMode.INPUT));
+                        n.getInputs().add(createNewPin(n));
                     }
                 }
-                v.computeSize();
+                n.computeSize();
                 panel.fireGraphChange();
                 panel.createCheckPoint();
                 panel.repaint();
@@ -85,9 +82,6 @@ public class ExternalCommandEditor implements NodeEditor {
         return p;
     }
 
-    @Override
-    public String getName() {
-        return "External Command";
-    }
+    public abstract Pin createNewPin(Node n);
 
 }

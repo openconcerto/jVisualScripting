@@ -434,4 +434,8 @@ public abstract class Node implements Externalizable {
 
     }
 
+    public boolean isInputConnected(int pinIndex) {
+        return this.getOutputs().get(pinIndex).isConnected();
+    }
+
 }

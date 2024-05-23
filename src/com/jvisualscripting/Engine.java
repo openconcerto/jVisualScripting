@@ -9,6 +9,7 @@ import java.util.Map;
 
 import com.jvisualscripting.event.StartEventNode;
 import com.jvisualscripting.filefunction.FileSaveString;
+import com.jvisualscripting.filefunction.ReadLinesFromFile;
 import com.jvisualscripting.filefunction.StringToFile;
 import com.jvisualscripting.flowcontrol.Branch;
 import com.jvisualscripting.flowcontrol.ForLoop;
@@ -17,6 +18,8 @@ import com.jvisualscripting.function.Delay;
 import com.jvisualscripting.function.EndNode;
 import com.jvisualscripting.function.ExternalCommand;
 import com.jvisualscripting.function.Print;
+import com.jvisualscripting.function.network.HttpGet;
+import com.jvisualscripting.function.ollama.OllamaQuery;
 import com.jvisualscripting.variable.BooleanFalseVariable;
 import com.jvisualscripting.variable.BooleanPin;
 import com.jvisualscripting.variable.BooleanTrueVariable;
@@ -29,7 +32,9 @@ import com.jvisualscripting.variable.FloatPin;
 import com.jvisualscripting.variable.FloatSplitter;
 import com.jvisualscripting.variable.FloatVariable;
 import com.jvisualscripting.variable.IndexOf;
+import com.jvisualscripting.variable.IntegerAdder;
 import com.jvisualscripting.variable.IntegerFormatter;
+import com.jvisualscripting.variable.IntegerMultiplier;
 import com.jvisualscripting.variable.IntegerPin;
 import com.jvisualscripting.variable.IntegerSplitter;
 import com.jvisualscripting.variable.IntegerVariable;
@@ -45,8 +50,6 @@ import com.jvisualscripting.variable.StringVariable;
 // TODO : BigDecimal
 
 // TODO : http GET / JSOUP
-// TODO : minimap
-// TODO : sauvegarde des "lane"
 
 public class Engine {
     public static final String VERSION = "1.0";
@@ -101,9 +104,15 @@ public class Engine {
             defaultEngine.registerNodeType(43, "Time", "Current date", CurrentDate.class);
             defaultEngine.registerNodeType(44, "Data processor", "String equals", StringEquals.class);
 
+            defaultEngine.registerNodeType(45, "Data processor", "Integer Adder", IntegerAdder.class);
+            defaultEngine.registerNodeType(46, "Data processor", "Integer Multiplier", IntegerMultiplier.class);
+
             defaultEngine.registerNodeType(100, "Execution", "External Command", ExternalCommand.class);
             defaultEngine.registerNodeType(200, "Variable", "File", StringToFile.class);
             defaultEngine.registerNodeType(201, "IO", "Save String to File", FileSaveString.class);
+            defaultEngine.registerNodeType(202, "IO", "Read Lines from File", ReadLinesFromFile.class);
+            defaultEngine.registerNodeType(500, "AI", "Ollama Query", OllamaQuery.class);
+            defaultEngine.registerNodeType(600, "Network", "HTTP Get", HttpGet.class);
             defaultEngine.registerNodeType(10000, "Execution", "End", EndNode.class);
         }
 
@@ -111,43 +120,43 @@ public class Engine {
     }
 
     public void registerPinType(int type, Class<? extends Pin> class1) {
-        mapTypePin.put(type, class1);
-        mapClassPin.put(class1, type);
+        this.mapTypePin.put(type, class1);
+        this.mapClassPin.put(class1, type);
     }
 
     public Integer getTypeForPin(Class<? extends Pin> class1) {
-        return mapClassPin.get(class1);
+        return this.mapClassPin.get(class1);
     }
 
     public Class<? extends Pin> getClassForPinType(Integer type) {
-        return mapTypePin.get(type);
+        return this.mapTypePin.get(type);
     }
 
     public void registerNodeType(int type, String nodeType, String name, Class<? extends Node> class1) {
-        mapTypeNode.put(type, class1);
-        mapClassNode.put(class1, type);
-        mapClassNodeType.put(class1, nodeType);
-        mapClassNodeName.put(class1, name);
+        this.mapTypeNode.put(type, class1);
+        this.mapClassNode.put(class1, type);
+        this.mapClassNodeType.put(class1, nodeType);
+        this.mapClassNodeName.put(class1, name);
     }
 
     public Integer getTypeForNode(Class<? extends Node> class1) {
-        return mapClassNode.get(class1);
+        return this.mapClassNode.get(class1);
     }
 
     public Class<? extends Node> getClassForNodeType(Integer type) {
-        return mapTypeNode.get(type);
+        return this.mapTypeNode.get(type);
     }
 
     public List<Class<? extends Node>> getRegisteredNodes() {
-        return new ArrayList<>(mapClassNode.keySet());
+        return new ArrayList<>(this.mapClassNode.keySet());
     }
 
     public String getName(Class<? extends Node> c) {
-        return mapClassNodeName.get(c);
+        return this.mapClassNodeName.get(c);
     }
 
     public String getTypeName(Class<? extends Node> c) {
-        return mapClassNodeType.get(c);
+        return this.mapClassNodeType.get(c);
     }
 
     public String getId() {

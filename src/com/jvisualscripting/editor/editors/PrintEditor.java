@@ -20,6 +20,7 @@ public class PrintEditor implements NodeEditor {
     @Override
     public JPanel createEditor(EventGraphEditorPanel panel, Node n) {
         final JPanel p = new JPanel();
+        p.setOpaque(false);
         p.setLayout(new GridBagLayout());
         final GridBagConstraints c = new GridBagConstraints();
         c.insets = new Insets(2, 4, 2, 4);
@@ -29,6 +30,7 @@ public class PrintEditor implements NodeEditor {
         c.weightx = 1;
         final Print v = (Print) n;
         final JCheckBox check = new JCheckBox("new line");
+        check.setOpaque(false);
         check.setSelected(v.hasNewLine());
         p.add(check, c);
 

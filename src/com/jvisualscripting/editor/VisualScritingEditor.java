@@ -80,6 +80,7 @@ import com.jvisualscripting.variable.StringVariable;
 // TODO : JMenu
 // TODO : Step
 // TODO : Speed of move
+// TODO : save as : selecteur de type
 
 public class VisualScritingEditor extends JPanel {
 
@@ -527,6 +528,7 @@ public class VisualScritingEditor extends JPanel {
 
             }
         });
+        System.gc();
     }
 
     public void saveAs() throws IOException {

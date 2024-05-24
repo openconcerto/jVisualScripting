@@ -16,6 +16,10 @@ import com.jvisualscripting.variable.StringPin;
 
 public class VLink {
 
+    private static final BasicStroke PIN_STROKE = new BasicStroke(3f);
+    private static final BasicStroke EXECUTION_PIN_STROKE = new BasicStroke(3f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[] { 9 }, 0);
+    private static final BasicStroke PIN_COLOR = new BasicStroke(9f);
+    private static final BasicStroke EXECUTION_PIN_COLOR = new BasicStroke(5f);
     private Link link;
     private boolean selected;
     private boolean enabled = true;
@@ -44,8 +48,8 @@ public class VLink {
 
     public void paint(Graphics g, boolean full) {
         final Graphics2D g2 = (Graphics2D) g;
-        final Pin p1 = link.getFrom();
-        final Pin p2 = link.getTo();
+        final Pin p1 = this.link.getFrom();
+        final Pin p2 = this.link.getTo();
         final Node node1 = p1.getNode();
         final int x1 = node1.getX(p1);
         final int y1 = node1.getY(p1);
@@ -62,12 +66,12 @@ public class VLink {
         }
 
         // Highlight
-        if (selected) {
+        if (this.selected) {
             g2.setColor(VNode.SELECTION_COLOR);
             if (p1 instanceof ExecutionPin) {
-                g2.setStroke(new BasicStroke(5f));
+                g2.setStroke(EXECUTION_PIN_COLOR);
             } else {
-                g2.setStroke(new BasicStroke(9f));
+                g2.setStroke(PIN_COLOR);
             }
             draw(g2, x1, y1, x2, y2);
         }
@@ -75,19 +79,19 @@ public class VLink {
         Color linkColor = getPinColor(p1);
         if (p1 instanceof TempPin)
             linkColor = getPinColor(p2);
-        if (enabled) {
+        if (this.enabled) {
             g.setColor(linkColor);
         } else {
             g.setColor(Color.LIGHT_GRAY);
         }
 
         if (p1 instanceof ExecutionPin || p2 instanceof ExecutionPin) {
-            g2.setStroke(new BasicStroke(3f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[] { 9 }, 0));
+            g2.setStroke(EXECUTION_PIN_STROKE);
         } else {
-            g2.setStroke(new BasicStroke(3f));
+            g2.setStroke(PIN_STROKE);
         }
         draw(g2, x1 + 7, y1, x2 - 7, y2);
-        g2.setStroke(new BasicStroke(3f));
+        g2.setStroke(PIN_STROKE);
         if (p1 instanceof TempPin) {
             g.fillOval(x1 - 4, y1 - 4, 9, 9);
         }
@@ -117,18 +121,16 @@ public class VLink {
     }
 
     public Link getLink() {
-        return link;
+        return this.link;
     }
 
     public void setEnabled(boolean b) {
         this.enabled = b;
-        // link.getFrom().setEnabled(b);
-        // link.getTo().setEnabled(b);
     }
 
     @Override
     public String toString() {
-        return super.toString() + " : " + link + ", enabled:" + this.enabled + ", selected:" + selected;
+        return super.toString() + " : " + this.link + ", enabled:" + this.enabled + ", selected:" + this.selected;
     }
 
 }

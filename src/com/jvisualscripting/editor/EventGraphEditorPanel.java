@@ -62,6 +62,11 @@ import com.jvisualscripting.event.EventNode;
 
 public class EventGraphEditorPanel extends JPanel implements Scrollable {
 
+    private static final Color GLUE_COLOR = new Color(120, 185, 240);
+    private static final BasicStroke GLUE_STROKE = new BasicStroke(2f);
+    private static final BasicStroke LANE_STROKE = new BasicStroke(4f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[] { 30, 10 }, 0);
+    private static final Color GRID_COLOR = new Color(230, 240, 252);
+    private static final Color BACKGROUND_COLOR = new Color(252, 252, 252);
     public static final int GRID_SIZE = 20;
     private static final long serialVersionUID = 8745082478333263177L;
     private EventGraph graph;
@@ -847,19 +852,20 @@ public class EventGraphEditorPanel extends JPanel implements Scrollable {
             List<String> types = new ArrayList<>();
             types.addAll(map.keySet());
             Collections.sort(types);
+            final Comparator<Class<? extends Node>> comparator = new Comparator<Class<? extends Node>>() {
 
+                @Override
+                public int compare(Class<? extends Node> o1, Class<? extends Node> o2) {
+                    return e.getName(o1).compareToIgnoreCase(e.getName(o2));
+                }
+            };
             for (String type : types) {
                 JMenu menu = new JMenu(type);
                 m.add(menu);
 
                 List<Class<? extends Node>> nodes = map.get(type);
-                Collections.sort(nodes, new Comparator<Class<? extends Node>>() {
 
-                    @Override
-                    public int compare(Class<? extends Node> o1, Class<? extends Node> o2) {
-                        return e.getName(o1).compareToIgnoreCase(e.getName(o2));
-                    }
-                });
+                Collections.sort(nodes, comparator);
                 for (Class<? extends Node> c : nodes) {
 
                     JMenuItem item = new JMenuItem(e.getName(c));
@@ -1084,10 +1090,11 @@ public class EventGraphEditorPanel extends JPanel implements Scrollable {
         final int clipBoundsMaxY = clipBounds.y + clipBounds.height;
 
         // Background
-        g.setColor(new Color(252, 252, 252));
+        g.setColor(BACKGROUND_COLOR);
         g.fillRect(clipBounds.x, clipBounds.y, clipBounds.width, clipBounds.height);
-        g.setColor(new Color(230, 240, 252));
+        // Grid
         if (full) {
+            g.setColor(GRID_COLOR);
             // Horizontal lines
             for (int y = 0; y < clipBoundsMaxY; y += 20) {
                 if (y < clipBounds.y) {
@@ -1123,7 +1130,7 @@ public class EventGraphEditorPanel extends JPanel implements Scrollable {
         // Lanes
         for (Lane lane : this.graph.getLanes()) {
 
-            g2.setStroke(new BasicStroke(4f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[] { 30, 10 }, 0));
+            g2.setStroke(LANE_STROKE);
             g.setColor(lane.getColor());
             g.drawLine(0, lane.getY() + 2, clipBoundsMaxX, lane.getY() + 2);
             g.drawLine(0, lane.getY() + lane.getHeight() - 2, clipBoundsMaxX, lane.getY() + lane.getHeight() - 2);
@@ -1142,13 +1149,13 @@ public class EventGraphEditorPanel extends JPanel implements Scrollable {
         // Glue
         if (full) {
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
-            g2.setStroke(new BasicStroke(2f));
+            g2.setStroke(GLUE_STROKE);
             if (this.highlightGlueX > Integer.MIN_VALUE) {
-                g.setColor(new Color(120, 185, 240));
+                g.setColor(GLUE_COLOR);
                 g.drawLine(this.highlightGlueX, 0, this.highlightGlueX, this.getHeight());
             }
             if (this.highlightGlueY > Integer.MIN_VALUE) {
-                g.setColor(new Color(120, 185, 240));
+                g.setColor(GLUE_COLOR);
                 g.drawLine(0, this.highlightGlueY, this.getWidth(), this.highlightGlueY);
             }
         }

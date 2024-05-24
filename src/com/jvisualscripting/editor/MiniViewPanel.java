@@ -11,6 +11,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -21,7 +22,8 @@ public class MiniViewPanel extends JPanel implements GraphChangeListener {
 
     private static final Color SHADOW_COLOR = new Color(100, 100, 100, 10);
     private EventGraphEditorPanel graphPanel;
-    private Image imageOverlay;
+    private Image cachedImage = null;
+    private Image overlayImage = null;
     private Rectangle2D rect;
     private ExecutorService executor;
     private final SwingThrottle t;
@@ -79,7 +81,21 @@ public class MiniViewPanel extends JPanel implements GraphChangeListener {
         this.t.execute();
     }
 
-    float ra = 1f;
+    public synchronized void setCachedImage(Image cachedImage) {
+        this.cachedImage = cachedImage;
+    }
+
+    public synchronized Image getCachedImage() {
+        return this.cachedImage;
+    }
+
+    public synchronized void setOverlayImage(Image overlayImage) {
+        this.overlayImage = overlayImage;
+    }
+
+    public synchronized Image getOverlayImage() {
+        return this.overlayImage;
+    }
 
     private void computeBitmap() {
         int width = this.getWidth();
@@ -92,23 +108,36 @@ public class MiniViewPanel extends JPanel implements GraphChangeListener {
 
                 long t1 = System.currentTimeMillis();
 
-                final int imgWidth = (int) (width * MiniViewPanel.this.ra);
-                final int imgHeight = (int) (height * MiniViewPanel.this.ra);
-                Image i = createImage(imgWidth, imgHeight);
+                final int imgWidth = width;
+                final int imgHeight = height;
+                final Image i;
+                final Image cache = getCachedImage();
+                if (cache == null) {
+                    i = createImage(imgWidth, imgHeight);
+                    setOverlayImage(createImage(imgWidth, imgHeight));
+                    setCachedImage(i);
+                } else if (imgWidth == cache.getWidth(null) && imgHeight == cache.getHeight(null)) {
+                    i = cache;
+                } else {
+                    // New size
+                    i = createImage(imgWidth, imgHeight);
+                    setOverlayImage(createImage(imgWidth, imgHeight));
+                    setCachedImage(i);
+                    System.gc();
+                }
+
                 Graphics2D g2 = (Graphics2D) i.getGraphics();
 
                 g2.setClip(0, 0, imgWidth, imgHeight);
                 float r = ((float) width) / MiniViewPanel.this.graphPanel.getMinimumSize().width;
 
-                AffineTransform scalingTransform = AffineTransform.getScaleInstance(r * MiniViewPanel.this.ra, r * MiniViewPanel.this.ra);
-
+                AffineTransform scalingTransform = AffineTransform.getScaleInstance(r, r);
                 // Apply the transform to the graphics
                 g2.transform(scalingTransform);
 
                 MiniViewPanel.this.graphPanel.paintComponent(g2, false);
                 g2.dispose();
 
-                final Image i2 = ImageUtils.createQualityResizedImage(MiniViewPanel.this, i, width, height, false, true, Color.BLACK, false);
                 long t3 = System.currentTimeMillis();
                 final long delay = t3 - t1;
                 if (delay >= MiniViewPanel.this.t.getDelay()) {
@@ -116,12 +145,16 @@ public class MiniViewPanel extends JPanel implements GraphChangeListener {
                 } else if (delay < MiniViewPanel.this.t.getDelay() - 5) {
                     MiniViewPanel.this.t.setDelay(MiniViewPanel.this.t.getDelay() - 1);
                 }
+                synchronized (MiniViewPanel.this) {
+                    BufferedImage imageSrc = (BufferedImage) getCachedImage();
+                    BufferedImage imageDest = (BufferedImage) getOverlayImage();
+                    imageDest.setData(imageSrc.getRaster());
+                }
 
                 SwingUtilities.invokeLater(new Runnable() {
 
                     @Override
                     public void run() {
-                        MiniViewPanel.this.imageOverlay = i2;
                         repaint();
                     }
                 });
@@ -136,8 +169,8 @@ public class MiniViewPanel extends JPanel implements GraphChangeListener {
         g.setColor(Color.WHITE);
 
         g.fillRect(0, 0, this.getWidth(), this.getHeight());
-        if (this.imageOverlay != null) {
-            g.drawImage(this.imageOverlay, 0, 0, null);
+        if (this.getOverlayImage() != null) {
+            g.drawImage(this.getOverlayImage(), 0, 0, null);
         }
         if (this.rect != null) {
             g.setColor(SHADOW_COLOR);

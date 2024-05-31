@@ -201,15 +201,15 @@ public abstract class Node implements Externalizable {
 
     public int getY(Pin p) {
         if (this.inputs != null) {
-            int y = this.inputs.indexOf(p);
-            if (y >= 0) {
-                return this.y + 40 + y * 20;
+            int pinIndex = this.inputs.indexOf(p);
+            if (pinIndex >= 0) {
+                return this.y + 40 + pinIndex * 20;
             }
         }
         if (this.outputs != null) {
-            int y = this.outputs.indexOf(p);
-            if (y >= 0) {
-                return this.y + 40 + y * 20;
+            int pinIndex = this.outputs.indexOf(p);
+            if (pinIndex >= 0) {
+                return this.y + 40 + pinIndex * 20;
             }
         }
         return 0;

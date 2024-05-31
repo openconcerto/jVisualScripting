@@ -18,4 +18,9 @@ public class ExecutionPin extends Pin {
         }
         return (pin instanceof ExecutionPin);
     }
+
+    @Override
+    public Node createCompatibleVariableNode() {
+        return null;
+    }
 }

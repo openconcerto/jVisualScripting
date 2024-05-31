@@ -19,6 +19,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
@@ -36,6 +37,7 @@ public class EventGraph implements Externalizable {
     private List<Link> links = new ArrayList<>();
     private List<Lane> lanes = new ArrayList<>();
     private List<EventGraphListener> listeners;
+    private Map<String, String> parameters = new HashMap<>();
 
     private String uuid;
 
@@ -58,6 +60,14 @@ public class EventGraph implements Externalizable {
         if (this.listeners.isEmpty()) {
             this.listeners = null;
         }
+    }
+
+    public void putParameter(String key, String value) {
+        this.parameters.put(key, value);
+    }
+
+    public String getParameter(String key) {
+        return this.parameters.get(key);
     }
 
     public void add(Node n) {
@@ -141,6 +151,22 @@ public class EventGraph implements Externalizable {
             link.put("to", l.getTo().getId());
             linksList.add(link);
         }
+
+        if (!this.lanes.isEmpty()) {
+            final JSONArray lanesList = new JSONArray();
+            obj.put("lanes", lanesList);
+            for (Lane lane : this.lanes) {
+                nodesList.add(lane.exportGraphAndState(e));
+            }
+        }
+
+        if (!this.parameters.isEmpty()) {
+            final JSONObject parametersObj = new JSONObject();
+            obj.put("parameters", parametersObj);
+            for (Entry<String, String> entry : this.parameters.entrySet()) {
+                parametersObj.put(entry.getKey(), entry.getValue());
+            }
+        }
         return obj;
     }
 
@@ -162,7 +188,7 @@ public class EventGraph implements Externalizable {
             Class<? extends Node> c = e.getClassForNodeType(type);
             try {
                 Constructor<?> ctor = c.getDeclaredConstructor();
-                ctor.setAccessible(true);
+
                 Node n = (Node) ctor.newInstance();
                 //
                 n.initFromJSON(obj, e);
@@ -212,30 +238,54 @@ public class EventGraph implements Externalizable {
 
         }
 
+        if (obj.has("lanes")) {
+            final JSONArray lanesList = obj.getJSONArray("lanes");
+            this.lanes = new ArrayList<>(lanesList.size());
+            for (Object o : lanesList) {
+                final Lane lane = new Lane();
+                lane.initFromJSON((JSONObject) o);
+                this.lanes.add(lane);
+            }
+        }
+
+        if (obj.has("parameters")) {
+            final JSONObject oParameters = obj.getJSONObject("parameters");
+            int parameterCount = oParameters.length();
+            this.parameters = new HashMap<>(parameterCount);
+            for (String key : oParameters.keySet()) {
+                this.parameters.put(key, oParameters.getString(key));
+            }
+        }
     }
 
     @Override
     public void writeExternal(ObjectOutput out) throws IOException {
         Engine e = Engine.getDefault();
-        out.writeByte(this.nodes.size());
+        out.writeInt(this.nodes.size());
         for (Node n : this.nodes) {
             out.writeInt(e.getTypeForNode(n.getClass()));
             n.writeExternal(out);
         }
-        out.writeByte(this.links.size());
+        out.writeInt(this.links.size());
         for (Link l : this.links) {
             out.writeInt(l.getFrom().getId());
             out.writeInt(l.getTo().getId());
         }
-        out.writeByte(this.lanes.size());
+        out.writeInt(this.lanes.size());
         for (Lane l : this.lanes) {
             l.writeExternal(out);
         }
+        out.writeInt(this.parameters.size());
+        for (Entry<String, String> entry : this.parameters.entrySet()) {
+            out.writeUTF(entry.getKey());
+            out.writeUTF(entry.getValue());
+        }
+
     }
 
     @Override
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-        int nodeCount = in.readByte();
+        int nodeCount = in.readInt();
         this.nodes = new ArrayList<>(nodeCount);
         Engine e = Engine.getDefault();
         Map<Integer, Pin> pinMap = new HashMap<>();
@@ -244,7 +294,7 @@ public class EventGraph implements Externalizable {
             Class<? extends Node> c = e.getClassForNodeType(type);
             try {
                 Constructor<?> ctor = c.getDeclaredConstructor();
-                ctor.setAccessible(true);
+
                 Node n = (Node) ctor.newInstance();
                 n.readExternal(in);
                 if (n.getInputSize() > 0) {
@@ -266,7 +316,7 @@ public class EventGraph implements Externalizable {
             }
 
         }
-        int linkCount = in.readByte();
+        int linkCount = in.readInt();
         this.links = new ArrayList<>(linkCount);
 
         for (int i = 0; i < linkCount; i++) {
@@ -286,14 +336,18 @@ public class EventGraph implements Externalizable {
             addLink(from, to);
 
         }
-        int laneCount = in.readByte();
+        int laneCount = in.readInt();
         this.lanes = new ArrayList<>(laneCount);
         for (int i = 0; i < laneCount; i++) {
             Lane lane = new Lane();
             lane.readExternal(in);
             this.lanes.add(lane);
         }
-
+        int parameterCount = in.readInt();
+        this.parameters = new HashMap<>(parameterCount);
+        for (int i = 0; i < parameterCount; i++) {
+            this.parameters.put(in.readUTF(), in.readUTF());
+        }
     }
 
     public void dump(PrintStream out) {
@@ -362,7 +416,9 @@ public class EventGraph implements Externalizable {
         for (Node n : this.nodes) {
             if (n instanceof EndNode) {
                 final EndNode endNode = (EndNode) n;
-                return endNode.isActive();
+                if (endNode.isActive()) {
+                    return true;
+                }
             }
         }
         return false;

@@ -4,7 +4,6 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.IOException;
-import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
@@ -33,11 +32,11 @@ public class TransferableNodesAndLinks implements Transferable, Serializable {
     }
 
     public List<Node> getNodes() {
-        return nodes;
+        return this.nodes;
     }
 
     public List<Link> getLinks() {
-        return links;
+        return this.links;
     }
 
     @Override
@@ -63,16 +62,14 @@ public class TransferableNodesAndLinks implements Transferable, Serializable {
 
     // implementation of Serializable
     private void writeObject(java.io.ObjectOutputStream out) throws IOException {
-        // TODO : add link
         out.writeInt(this.nodes.size());
-
         final Engine e = Engine.getDefault();
         for (Node n : this.nodes) {
             out.writeInt(e.getTypeForNode(n.getClass()));
             n.writeExternal(out);
         }
-        out.writeByte(links.size());
-        for (Link l : links) {
+        out.writeByte(this.links.size());
+        for (Link l : this.links) {
             out.writeInt(l.getFrom().getId());
             out.writeInt(l.getTo().getId());
         }
@@ -91,7 +88,6 @@ public class TransferableNodesAndLinks implements Transferable, Serializable {
             Class<? extends Node> c = e.getClassForNodeType(type);
             try {
                 Constructor<?> ctor = c.getDeclaredConstructor();
-                ctor.setAccessible(true);
                 final Node n = (Node) ctor.newInstance();
                 n.readExternal(in);
                 if (n.getInputSize() > 0) {
@@ -119,25 +115,20 @@ public class TransferableNodesAndLinks implements Transferable, Serializable {
             int pinId = in.readInt();
             Pin from = pinMap.get(pinId);
             pinId = in.readInt();
-            Pin to = pinMap.get(pinId);
             if (from == null) {
                 System.err.println("cannot find pin (from)" + pinId);
                 continue;
             }
-
+            Pin to = pinMap.get(pinId);
             if (to == null) {
                 System.err.println("cannot find pin (to) " + pinId);
                 continue;
             }
             Link link = new Link(from, to);
-            links.add(link);
+            this.links.add(link);
 
         }
 
-    }
-
-    // implementation of Serializable
-    private void readObjectNoData() throws ObjectStreamException {
     }
 
     @Override

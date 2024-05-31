@@ -6,7 +6,7 @@ import com.jvisualscripting.Pin;
 
 public class FloatPin extends DataPin {
 
-    protected FloatPin() {
+    public FloatPin() {
         // Serialisation
     }
 
@@ -28,4 +28,8 @@ public class FloatPin extends DataPin {
         return Float.parseFloat(super.getValue().toString());
     }
 
+    @Override
+    public Node createCompatibleVariableNode() {
+        return new FloatVariable();
+    }
 }

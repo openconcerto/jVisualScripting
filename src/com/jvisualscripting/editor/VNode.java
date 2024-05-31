@@ -22,7 +22,6 @@ public class VNode {
     private static final Color NAME_COLOR = new Color(255, 255, 255, 255);
     private static final Color SHADOW_COLOR = new Color(0, 0, 0, 20);
     private static final BasicStroke BORDER_STROKE = new BasicStroke(2f);
-    private static final Color DEFAULT_COLOR = Color.GRAY;
     // https://coolors.co/palette/001219-005f73-0a9396-94d2bd-e9d8a6-ee9b00-ca6702-bb3e03-ae2012-9b2226
     public static final Color SELECTION_COLOR = new Color(255, 200, 20, 100);
 
@@ -33,6 +32,9 @@ public class VNode {
 
     private static final int PIN_DISTANCE = 20;
     private static final int PIN_WIDTH = 15;
+
+    public static final float FACTOR = 0.95f;
+
     private Node node;
     private Color color;
     private Font boldFont;
@@ -66,7 +68,7 @@ public class VNode {
         int y = this.node.getY();
         int width = this.node.getWidth() + 1;
         int height = this.node.getHeight();
-        if (!g.getClipBounds().intersects(x - 20, y - 20, width + 40, height + 40)) {
+        if (!g.getClipBounds().intersects(x - 20D, y - 20D, width + 40D, height + 40D)) {
             return;
         }
 
@@ -88,52 +90,38 @@ public class VNode {
         // BG
 
         // Shadow
-        if (full)
-            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        if (selected) {
-            g.setColor(SELECTION_COLOR);
-        } else {
-            if (this.node.isBlocked()) {
-                g.setColor(Color.RED);
-            } else if (this.node.isActive()) {
-                g.setColor(Color.GREEN);
-            } else {
-                g.setColor(SHADOW_COLOR);
-            }
-        }
         if (full) {
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            if (selected) {
+                g.setColor(SELECTION_COLOR);
+            } else {
+                if (this.node.isBlocked()) {
+                    g.setColor(Color.RED);
+                } else if (this.node.isActive()) {
+                    g.setColor(Color.GREEN);
+                } else {
+                    g.setColor(SHADOW_COLOR);
+                }
+            }
             g2.fillRoundRect(x - 5, y + 1 + -5, width + 10, height - 1 + 10, 7, 7);
-        } else {
-            g2.fillRect(x - 5, y + 1 + -5, width + 10, height - 1 + 10);
         }
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         // Background
-        g.setColor(getDarkColor());
-        if (full) {
-            g2.fillRoundRect(x, y + 1, width, height - 1, 7, 7);
-        } else {
-            g2.fillRect(x, y + 1, width, height - 1);
-        }
-        g.setColor(this.getColor());
-        if (full) {
-            g2.fillRoundRect(x, y + 1, width, height - 1 - 10, 7, 7);
-        } else {
-            g2.fillRect(x, y + 1, width, height - 1 - 10);
-        }
         g.setColor(this.getBrightColor());
+        g2.fillRect(x, y + 1, width, 25);
 
-        if (full) {
-            g2.fillRoundRect(x, y + 1, width, 20 + 5, 7, 7);
-        } else {
-            g2.fillRect(x, y + 1, width, 20 + 5);
-        }
+        g.setColor(this.getColor());
+        g2.fillRect(x, y + 1 + 25, width, height - 36);
+
+        g.setColor(this.getDarkColor());
+        g2.fillRect(x, y + height - 10, width, 10);
+
         // Name
         final int BORDER = 4;
         g.setColor(NAME_COLOR);
         g.drawString(name, x + BORDER + 5, y + 13 + 5);
 
         // Pins
-
         int y2 = getFirstPinY(y);
         g2.setStroke(PIN_STROKE);
         if (full) {
@@ -141,11 +129,9 @@ public class VNode {
         }
         g2.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_SPEED);
 
-        g.setFont(boldFont);
+        g.setFont(this.boldFont);
 
-        if (this.node.getInputSize() > 0)
-
-        {
+        if (this.node.getInputSize() > 0) {
             for (Pin p : this.node.getInputs()) {
                 if (selectedPins.contains(p)) {
                     g.setColor(SELECTION_COLOR);
@@ -238,7 +224,7 @@ public class VNode {
 
     private Color getDarkColor() {
         Color c = getColor();
-        float FACTOR = 0.95f;
+
         return new Color(Math.max((int) (c.getRed() * FACTOR), 0), Math.max((int) (c.getGreen() * FACTOR), 0), Math.max((int) (c.getBlue() * FACTOR), 0), c.getAlpha());
 
     }
@@ -248,7 +234,7 @@ public class VNode {
         int g = color2.getGreen();
         int b = color2.getBlue();
         int alpha = color2.getAlpha();
-        float FACTOR = 0.95f;
+
         /*
          * From 2D group: 1. black.brighter() should return grey 2. applying brighter to blue will
          * always return blue, brighter 3. non pure color (non zero rgb) will eventually return

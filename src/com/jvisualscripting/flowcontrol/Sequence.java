@@ -6,7 +6,7 @@ import com.jvisualscripting.Pin.PinMode;
 
 public class Sequence extends FlowNode {
 
-    protected Sequence() {
+    public Sequence() {
         this(2);
     }
 

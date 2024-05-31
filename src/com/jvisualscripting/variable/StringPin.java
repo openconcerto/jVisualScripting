@@ -6,7 +6,7 @@ import com.jvisualscripting.Pin;
 
 public class StringPin extends DataPin {
 
-    protected StringPin() {
+    public StringPin() {
         // Serialisation
     }
 
@@ -21,6 +21,13 @@ public class StringPin extends DataPin {
             return false;
         }
         return (pin instanceof StringPin);
+    }
+
+    @Override
+    public Node createCompatibleVariableNode() {
+        final StringVariable stringVariable = new StringVariable(getName());
+        stringVariable.setValue("");
+        return stringVariable;
     }
 
 }

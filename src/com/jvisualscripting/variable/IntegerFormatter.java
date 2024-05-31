@@ -31,7 +31,7 @@ public class IntegerFormatter extends Node {
                 return "";
             }
             IntegerPin connectedPin = (IntegerPin) p;
-            return String.valueOf(((Integer) connectedPin.getNode().getOuputValue(connectedPin)));
+            return String.valueOf((connectedPin.getNode().getOuputValue(connectedPin)));
         }
 
         throw new IllegalArgumentException(pin + " is not an declared output pin of this node");

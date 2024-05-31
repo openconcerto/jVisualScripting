@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
+import org.json.JSONObject;
+
 public class Lane {
     private String name;
     private Color color;
@@ -67,6 +69,22 @@ public class Lane {
         this.color = new Color(in.readInt());
         this.y = in.readShort();
         this.height = in.readShort();
+    }
+
+    public JSONObject exportGraphAndState(Engine e) {
+        final JSONObject o = new JSONObject();
+        o.put("name", this.name);
+        o.put("color", this.color);
+        o.put("y", this.y);
+        o.put("height", this.height);
+        return o;
+    }
+
+    public void initFromJSON(JSONObject o) {
+        this.name = o.getString("name");
+        this.color = o.getColor("color");
+        this.y = (short) o.getInt("y");
+        this.height = (short) o.getInt("height");
     }
 
 }

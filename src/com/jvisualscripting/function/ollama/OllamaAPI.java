@@ -17,6 +17,10 @@ public class OllamaAPI {
     private final int port;
     private boolean useHttps;
 
+    public OllamaAPI() {
+        this("localhost", 11434, false);
+    }
+
     public OllamaAPI(String host, int port, boolean useHttps) {
         this.host = host;
         this.port = port;

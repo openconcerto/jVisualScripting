@@ -15,6 +15,10 @@ import com.jvisualscripting.Pin.PinMode;
 public class BooleanVariable extends Node {
     private Boolean value;
 
+    public BooleanVariable() {
+        // Serialiation
+    }
+
     public BooleanVariable(boolean b) {
         super("Boolean");
         this.value = b;

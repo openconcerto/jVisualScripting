@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
 import com.jvisualscripting.DataPin;
@@ -43,7 +44,7 @@ public class ReadLinesFromFile extends Node {
         }
 
         File inFile = (File) getInputValue(1);
-        try (BufferedReader bReader = new BufferedReader(new InputStreamReader(new FileInputStream(inFile), "UTF-8"))) {
+        try (BufferedReader bReader = new BufferedReader(new InputStreamReader(new FileInputStream(inFile), StandardCharsets.UTF_8))) {
             String line = null;
             do {
                 line = bReader.readLine();

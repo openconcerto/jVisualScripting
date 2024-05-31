@@ -5,7 +5,7 @@ import com.jvisualscripting.Node;
 import com.jvisualscripting.Pin;
 
 public class IntegerPin extends DataPin {
-    protected IntegerPin() {
+    public IntegerPin() {
         // Serialisation
     }
 
@@ -27,4 +27,8 @@ public class IntegerPin extends DataPin {
         return Integer.parseInt(super.getValue().toString());
     }
 
+    @Override
+    public Node createCompatibleVariableNode() {
+        return new IntegerVariable();
+    }
 }

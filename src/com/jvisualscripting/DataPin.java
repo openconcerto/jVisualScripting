@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
-public class DataPin extends Pin {
+public abstract class DataPin extends Pin {
     protected Object value;
     protected Object defaultValue = "?";
 
@@ -51,4 +51,5 @@ public class DataPin extends Pin {
         this.defaultValue = in.readObject();
 
     }
+
 }

@@ -4,8 +4,12 @@ import com.jvisualscripting.Node;
 import com.jvisualscripting.Pin;
 
 public class TempPin extends Pin {
-    int x;
-    int y;
+    private int x;
+    private int y;
+
+    public TempPin() {
+        // Serialization
+    }
 
     public TempPin(int x, int y, PinMode mode) {
         super(null, "temp", mode);
@@ -46,12 +50,18 @@ public class TempPin extends Pin {
 
     @Override
     public void setNode(Node node) {
+        // Nothing
     }
 
     @Override
     public Node getNode() {
-        return node;
+        return this.node;
 
+    }
+
+    @Override
+    public Node createCompatibleVariableNode() {
+        return null;
     }
 
 }

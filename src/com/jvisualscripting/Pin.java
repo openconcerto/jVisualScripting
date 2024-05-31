@@ -9,8 +9,8 @@ import org.json.JSONObject;
 
 import com.jvisualscripting.editor.TempPin;
 
-public class Pin implements Externalizable {
-    public Node node;
+public abstract class Pin implements Externalizable {
+    protected Node node;
     private String name;
     private Pin connectedPin;
     private PinMode mode;
@@ -21,8 +21,8 @@ public class Pin implements Externalizable {
         INPUT, OUTPUT;
     }
 
-    protected Pin() {
-
+    public Pin() {
+        // Serialization
     }
 
     public Pin(Node node, String name, PinMode mode) {
@@ -73,10 +73,7 @@ public class Pin implements Externalizable {
         if (pin.getMode() == PinMode.INPUT && this.getMode() == PinMode.OUTPUT) {
             return true;
         }
-        if (pin.getMode() == PinMode.OUTPUT && this.getMode() == PinMode.INPUT) {
-            return true;
-        }
-        return false;
+        return pin.getMode() == PinMode.OUTPUT && this.getMode() == PinMode.INPUT;
     }
 
     public void setConnectedPin(Pin connectedPin) {
@@ -150,5 +147,7 @@ public class Pin implements Externalizable {
             this.mode = PinMode.OUTPUT;
         }
     }
+
+    public abstract Node createCompatibleVariableNode();
 
 }

@@ -52,6 +52,7 @@ import javax.swing.event.AncestorListener;
 
 import com.jvisualscripting.Engine;
 import com.jvisualscripting.EventGraph;
+import com.jvisualscripting.ExecutionPin;
 import com.jvisualscripting.FlowNode;
 import com.jvisualscripting.Lane;
 import com.jvisualscripting.Link;
@@ -100,6 +101,8 @@ public class EventGraphEditorPanel extends JPanel implements Scrollable {
     private List<GraphChangeListener> graphChangeListeners = new ArrayList<>();
 
     private long lastTimeScrollRect = 0;
+
+    // TODO : cTRL ou SHIFT + rect de selection
 
     public EventGraphEditorPanel(EventGraph g) {
 
@@ -196,22 +199,25 @@ public class EventGraphEditorPanel extends JPanel implements Scrollable {
                     if (!e.isControlDown() && (!EventGraphEditorPanel.this.selectedNodes.contains(node) || EventGraphEditorPanel.this.selectedNodes.isEmpty())) {
                         EventGraphEditorPanel.this.selectedNodes.clear();
                     }
-
-                    EventGraphEditorPanel.this.selectedNodes.add(node);
                     EventGraphEditorPanel.this.moving = true;
                     EventGraphEditorPanel.this.movingNode = node;
                     EventGraphEditorPanel.this.dClickX = e.getX() - node.getNode().getX();
                     EventGraphEditorPanel.this.dClickY = e.getY() - node.getNode().getY();
-                    // Move to front
-                    EventGraphEditorPanel.this.vNodes.remove(node);
-                    EventGraphEditorPanel.this.vNodes.add(node);
-                    repaint();
-                    if (e.isPopupTrigger()) {
-                        showMenu(e.getX(), e.getY());
-                    } else {
+                    if (!EventGraphEditorPanel.this.selectedNodes.contains(node)) {
+                        EventGraphEditorPanel.this.selectedNodes.add(node);
+
+                        // Move to front
+                        EventGraphEditorPanel.this.vNodes.remove(node);
+                        EventGraphEditorPanel.this.vNodes.add(node);
+                        repaint();
+
                         fireNodeSelected(node.getNode());
 
+                    } else if (e.isControlDown()) {
+                        EventGraphEditorPanel.this.selectedNodes.remove(node);
+                        repaint();
                     }
+
                 } else {
                     EventGraphEditorPanel.this.selectedNodes.clear();
 
@@ -436,9 +442,16 @@ public class EventGraphEditorPanel extends JPanel implements Scrollable {
                 final String DOWN = "down";
                 final String LEFT = "left";
                 final String RIGHT = "right";
+                final String CUT = "cut";
                 final String COPY = "copy";
                 final String PASTE = "paste";
+                Action cutAction = new AbstractAction() {
 
+                    public void actionPerformed(ActionEvent e) {
+                        cut();
+                        fireGraphChange();
+                    }
+                };
                 Action copyAction = new AbstractAction() {
 
                     public void actionPerformed(ActionEvent e) {
@@ -466,7 +479,7 @@ public class EventGraphEditorPanel extends JPanel implements Scrollable {
                         } catch (IOException e1) {
                             e1.printStackTrace();
                         }
-                        fireGraphChange();
+
                     }
                 };
                 Action redoAction = new AbstractAction() {
@@ -478,7 +491,6 @@ public class EventGraphEditorPanel extends JPanel implements Scrollable {
                         } catch (IOException e1) {
                             e1.printStackTrace();
                         }
-                        fireGraphChange();
                     }
                 };
                 Action deleteAction = new AbstractAction() {
@@ -492,14 +504,6 @@ public class EventGraphEditorPanel extends JPanel implements Scrollable {
                         }
                     }
 
-                    private void deleteSelectedNodes() {
-                        for (VNode node : EventGraphEditorPanel.this.selectedNodes) {
-                            remove(node);
-                        }
-                        createCheckPoint();
-                        EventGraphEditorPanel.this.repaint();
-                        fireGraphChange();
-                    }
                 };
 
                 Action leftAction = new AbstractAction() {
@@ -584,6 +588,7 @@ public class EventGraphEditorPanel extends JPanel implements Scrollable {
                 getActionMap().put(RIGHT, rightAction);
                 getActionMap().put(UP, upAction);
                 getActionMap().put(DOWN, downAction);
+                getActionMap().put(CUT, cutAction);
                 getActionMap().put(COPY, copyAction);
                 getActionMap().put(PASTE, pasteAction);
 
@@ -597,6 +602,7 @@ public class EventGraphEditorPanel extends JPanel implements Scrollable {
                     i.put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 0), RIGHT);
                     i.put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0), UP);
                     i.put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0), DOWN);
+                    i.put(KeyStroke.getKeyStroke(KeyEvent.VK_X, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()), CUT);
                     i.put(KeyStroke.getKeyStroke(KeyEvent.VK_C, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()), COPY);
                     i.put(KeyStroke.getKeyStroke(KeyEvent.VK_V, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()), PASTE);
                 }
@@ -615,7 +621,6 @@ public class EventGraphEditorPanel extends JPanel implements Scrollable {
                     for (Class<? extends Node> class1 : nodes) {
                         if (class1.getCanonicalName().equals(str)) {
                             Constructor<?> ctor = class1.getDeclaredConstructor();
-                            ctor.setAccessible(true);
                             Node n = (Node) ctor.newInstance();
                             EventGraphEditorPanel.this.graph.add(n);
                             VNode vn = new VNode(n);
@@ -717,6 +722,23 @@ public class EventGraphEditorPanel extends JPanel implements Scrollable {
 
     }
 
+    private void deleteSelectedNodes() {
+        for (VNode node : EventGraphEditorPanel.this.selectedNodes) {
+            remove(node);
+        }
+        createCheckPoint();
+        EventGraphEditorPanel.this.repaint();
+        fireGraphChange();
+    }
+
+    protected void cut() {
+        if (this.selectedNodes.isEmpty()) {
+            return;
+        }
+        copy();
+        deleteSelectedNodes();
+    }
+
     protected void copy() {
         if (this.selectedNodes.isEmpty()) {
             return;
@@ -785,15 +807,16 @@ public class EventGraphEditorPanel extends JPanel implements Scrollable {
             restoreFromCheckPoint(c);
         }
         repaint();
+        fireGraphChange();
     }
 
-    protected void undo() throws IOException {
+    public void undo() throws IOException {
         CheckPoint c = this.history.undo();
         if (c != null) {
             restoreFromCheckPoint(c);
-
         }
         repaint();
+        fireGraphChange();
     }
 
     private void restoreFromCheckPoint(CheckPoint c) {
@@ -876,7 +899,6 @@ public class EventGraphEditorPanel extends JPanel implements Scrollable {
 
                             try {
                                 Constructor<?> ctor = c.getDeclaredConstructor();
-                                ctor.setAccessible(true);
                                 Node n = (Node) ctor.newInstance();
                                 EventGraphEditorPanel.this.graph.add(n);
                                 VNode vn = new VNode(n);
@@ -946,6 +968,9 @@ public class EventGraphEditorPanel extends JPanel implements Scrollable {
 
             return;
         }
+
+        // Non null node
+
         final JPopupMenu popup = new JPopupMenu();
 
         if (node.getNode() instanceof EventNode) {
@@ -984,6 +1009,48 @@ public class EventGraphEditorPanel extends JPanel implements Scrollable {
                 }
             });
             popup.add(menuItem);
+        }
+
+        //
+        boolean hasInput = false;
+        if (node.getNode().getInputs() != null) {
+            for (Pin pin : node.getNode().getInputs()) {
+                if (!pin.isConnected() && !(pin instanceof ExecutionPin)) {
+                    hasInput = true;
+                }
+            }
+        }
+        if (hasInput) {
+            final JMenuItem menuItemCreateVariables = new JMenuItem("Create input variables");
+            menuItemCreateVariables.addActionListener(new ActionListener() {
+
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    final Node n = node.getNode();
+                    int y = n.getY();
+                    for (Pin pin : node.getNode().getInputs()) {
+                        if (!pin.isConnected() && !(pin instanceof ExecutionPin)) {
+                            Node newNode = pin.createCompatibleVariableNode();
+                            if (newNode != null) {
+                                getGraph().add(newNode);
+                                addVNode(newNode, Math.max(0, n.getX() - newNode.getWidth() - 60), y);
+                                y += newNode.getHeight() + 20;
+                                for (Pin from : newNode.getOutputs()) {
+                                    if (from.canConnectPin(pin)) {
+                                        Link newLink = EventGraphEditorPanel.this.graph.addLink(from, pin);
+                                        EventGraphEditorPanel.this.vLinks.add(new VLink(newLink));
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    fireGraphChange();
+                    repaint();
+
+                }
+            });
+            popup.add(menuItemCreateVariables);
         }
         if (!this.selectedNodes.isEmpty()) {
             String remodeActionName = "Remove";
@@ -1279,5 +1346,11 @@ public class EventGraphEditorPanel extends JPanel implements Scrollable {
             out.println(l);
         }
 
+    }
+
+    public void addVNode(Node n, int x, int y) {
+        final VNode vn = new VNode(n);
+        vn.setLocation(x, y);
+        this.vNodes.add(vn);
     }
 }

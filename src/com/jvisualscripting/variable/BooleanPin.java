@@ -6,7 +6,7 @@ import com.jvisualscripting.Pin;
 
 public class BooleanPin extends DataPin {
 
-    protected BooleanPin() {
+    public BooleanPin() {
         // Serialisation
     }
 
@@ -20,5 +20,12 @@ public class BooleanPin extends DataPin {
         if (!b)
             return false;
         return pin instanceof BooleanPin;
+    }
+
+    @Override
+    public Node createCompatibleVariableNode() {
+        // We don't create a boolean node variable
+        // The user will connect an output of a node
+        return null;
     }
 }

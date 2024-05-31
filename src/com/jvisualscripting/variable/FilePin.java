@@ -3,10 +3,11 @@ package com.jvisualscripting.variable;
 import com.jvisualscripting.DataPin;
 import com.jvisualscripting.Node;
 import com.jvisualscripting.Pin;
+import com.jvisualscripting.filefunction.StringToFile;
 
 public class FilePin extends DataPin {
 
-    protected FilePin() {
+    public FilePin() {
         // Serialisation
     }
 
@@ -21,6 +22,11 @@ public class FilePin extends DataPin {
             return false;
         }
         return (pin instanceof FilePin);
+    }
+
+    @Override
+    public Node createCompatibleVariableNode() {
+        return new StringToFile();
     }
 
 }

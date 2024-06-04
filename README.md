@@ -26,18 +26,26 @@ Additionally, the engine can be embedded in your Java application or run workflo
 
 # Execution of a workflow in command line 
 ```
-java -jar jVisualScripting-1.0.jar helloworld.jvsz
+java -jar jVisualScripting-1.2.jar helloworld.jvsz
+```
+You can pass parameters using key=value format (use Parameter nodes to access them), for example
+```
+java -jar jVisualScripting-1.2.jar helloworld.jvsz name=you
 ```
 
 # Embbeding jVisualScript
 
-Just add jVisualScripting-1.0.jar in your classpath.
+Just add jVisualScripting-1.2.jar in your classpath.
 
 You can build a workflow using the EventGraph class.
 
 EventGraph can be created programmaticaly or loaded from a file.
 
+# Workflow creation
 
+Workflows can be created using the editor or in pure Java (using Node and Link objects on EventGraph).
+
+2 file formats are provided : a binary format (.jvsz) and a JSON format (.jvs)
 
 
 

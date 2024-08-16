@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -92,7 +93,7 @@ public class EventGraphEditorPanel extends JPanel implements Scrollable {
     protected HalfConnectedVLink temporyLink;
     private Point selectedPinLocation;
     protected VLink disabledLink;
-    private History history = new History(500);
+    private final History history;
 
     private Point origin;
     protected int originButton;
@@ -103,14 +104,14 @@ public class EventGraphEditorPanel extends JPanel implements Scrollable {
     private long lastTimeScrollRect = 0;
 
     // TODO : cTRL ou SHIFT + rect de selection
+    private final Engine engine;
 
-    public EventGraphEditorPanel(EventGraph g) {
-
+    public EventGraphEditorPanel(Engine engine, EventGraph g) {
+        this.engine = engine;
+        this.history = new History(500, engine);
         setGraph(g);
         try {
-
             this.fontBase = Font.createFont(Font.TRUETYPE_FONT, this.getClass().getResourceAsStream("Roboto-Regular.ttf"));
-
         } catch (FontFormatException | IOException e) {
             throw new IllegalStateException(e);
         }
@@ -617,7 +618,7 @@ public class EventGraphEditorPanel extends JPanel implements Scrollable {
 
                 try {
                     String str = support.getTransferable().getTransferData(DataFlavor.stringFlavor).toString();
-                    List<Class<? extends Node>> nodes = Engine.getDefault().getRegisteredNodes();
+                    List<Class<? extends Node>> nodes = engine.getRegisteredNodes();
                     for (Class<? extends Node> class1 : nodes) {
                         if (class1.getCanonicalName().equals(str)) {
                             Constructor<?> ctor = class1.getDeclaredConstructor();
@@ -756,7 +757,7 @@ public class EventGraphEditorPanel extends JPanel implements Scrollable {
         }
 
         Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-        TransferableNodesAndLinks t = new TransferableNodesAndLinks(nodes, links);
+        TransferableNodesAndLinks t = new TransferableNodesAndLinks(this.engine, nodes, links);
         clipboard.setContents(t, null);
     }
 
@@ -857,14 +858,24 @@ public class EventGraphEditorPanel extends JPanel implements Scrollable {
         final VNode node = getVNodeUnder(x, y);
         if (node == null) {
             final JPopupMenu popup = new JPopupMenu();
+            JMenuItem snap = new JMenuItem("Snap all to grid");
+
+            popup.add(snap);
+            snap.addActionListener(new ActionListener() {
+
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    snapToGrid(EventGraphEditorPanel.this.vNodes);
+                }
+            });
+
             // Add node
             JMenu m = new JMenu("Add node");
 
-            Engine e = Engine.getDefault();
             Map<String, List<Class<? extends Node>>> map = new HashMap<>();
 
-            for (Class<? extends Node> c : e.getRegisteredNodes()) {
-                final String typeName = e.getTypeName(c);
+            for (Class<? extends Node> c : this.engine.getRegisteredNodes()) {
+                final String typeName = this.engine.getTypeName(c);
                 List<Class<? extends Node>> list = map.get(typeName);
                 if (list == null) {
                     list = new ArrayList<>();
@@ -879,7 +890,7 @@ public class EventGraphEditorPanel extends JPanel implements Scrollable {
 
                 @Override
                 public int compare(Class<? extends Node> o1, Class<? extends Node> o2) {
-                    return e.getName(o1).compareToIgnoreCase(e.getName(o2));
+                    return EventGraphEditorPanel.this.engine.getName(o1).compareToIgnoreCase(EventGraphEditorPanel.this.engine.getName(o2));
                 }
             };
             for (String type : types) {
@@ -891,7 +902,7 @@ public class EventGraphEditorPanel extends JPanel implements Scrollable {
                 Collections.sort(nodes, comparator);
                 for (Class<? extends Node> c : nodes) {
 
-                    JMenuItem item = new JMenuItem(e.getName(c));
+                    JMenuItem item = new JMenuItem(this.engine.getName(c));
                     item.addActionListener(new ActionListener() {
 
                         @Override
@@ -972,7 +983,16 @@ public class EventGraphEditorPanel extends JPanel implements Scrollable {
         // Non null node
 
         final JPopupMenu popup = new JPopupMenu();
+        JMenuItem snap = new JMenuItem("Snap to grid");
 
+        popup.add(snap);
+        snap.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                snapToGrid(Arrays.asList(node));
+            }
+        });
         if (node.getNode() instanceof EventNode) {
 
             final JMenuItem menuItem = new JMenuItem("Trigger Event");
@@ -1353,4 +1373,39 @@ public class EventGraphEditorPanel extends JPanel implements Scrollable {
         vn.setLocation(x, y);
         this.vNodes.add(vn);
     }
+
+    public void snapToGrid(List<VNode> list) {
+        final int HALF_GRID = GRID_SIZE / 2;
+        for (VNode n : list) {
+            int x = n.getNode().getX();
+            if (x % GRID_SIZE != 0) {
+                int leftX = (x / GRID_SIZE);
+                leftX = leftX * GRID_SIZE;
+
+                if (x - leftX < HALF_GRID) {
+                    x = leftX;
+                } else {
+                    x = leftX + GRID_SIZE;
+                }
+
+            }
+
+            int y = n.getNode().getY();
+            if (y % GRID_SIZE != 0) {
+                int topY = (y / GRID_SIZE);
+                topY = topY * GRID_SIZE;
+
+                if (y - topY < HALF_GRID) {
+                    y = topY;
+                } else {
+                    y = topY + GRID_SIZE;
+                }
+            }
+            n.setLocation(x, y);
+
+        }
+        createCheckPoint();
+        repaint();
+    }
+
 }

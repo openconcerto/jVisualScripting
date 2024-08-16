@@ -61,14 +61,14 @@ public class StringVariable extends Node {
     }
 
     @Override
-    public void writeExternal(ObjectOutput out) throws IOException {
-        super.writeExternal(out);
+    public void writeExternal(Engine e, ObjectOutput out) throws IOException {
+        super.writeExternal(e, out);
         out.writeUTF(this.value);
     }
 
     @Override
-    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-        super.readExternal(in);
+    public void readExternal(Engine e, ObjectInput in) throws IOException, ClassNotFoundException {
+        super.readExternal(e, in);
         setValue(in.readUTF());
     }
 

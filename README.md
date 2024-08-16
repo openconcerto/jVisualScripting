@@ -6,6 +6,8 @@ This Java project provides a powerful workflow engine and a user-friendly visual
 
 Additionally, the engine can be embedded in your Java application or run workflows from the command line.
 
+![Screenshot](editor.png?raw=true "Title")
+
 ### Workflow Engine
 - **Dynamic Workflow Creation**: Easily define and modify workflows using Java.
 - **Execution Management**: Control and monitor workflow execution with real-time updates.
@@ -21,6 +23,8 @@ Additionally, the engine can be embedded in your Java application or run workflo
 - **Real-time Validation**: Immediate feedback on workflow design errors and inconsistencies.
 - **Export/Import**: Export workflows as compressed binary file or JSON for easy sharing and version control.
 - **Integration**: Seamlessly integrates with the workflow engine for direct deployment and testing.
+
+
 
 ![Screenshot](hello.png?raw=true "Title")
 

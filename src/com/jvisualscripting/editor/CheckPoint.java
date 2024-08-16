@@ -8,6 +8,7 @@ import java.io.ObjectOutputStream;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.jvisualscripting.Engine;
 import com.jvisualscripting.EventGraph;
 import com.jvisualscripting.Node;
 import com.jvisualscripting.Pin;
@@ -28,13 +29,13 @@ public class CheckPoint {
         this.bytes = bytes2;
     }
 
-    void park() throws IOException {
+    void park(Engine engine) throws IOException {
         if (this.bytes != null) {
             throw new IOException("already parked");
         }
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         final ObjectOutputStream objOut = new ObjectOutputStream(out);
-        this.g.writeExternal(objOut);
+        this.g.writeExternal(engine, objOut);
         objOut.writeInt(this.selectedPins.size());
         for (Pin p : this.selectedPins) {
             objOut.writeInt(p.getId());
@@ -53,7 +54,7 @@ public class CheckPoint {
 
     }
 
-    public void unpark() throws IOException {
+    public void unpark(Engine engine) throws IOException {
         if (this.bytes == null) {
             throw new IllegalStateException("not parked");
         }
@@ -61,7 +62,7 @@ public class CheckPoint {
             final ByteArrayInputStream in = new ByteArrayInputStream(this.bytes);
             final ObjectInputStream objIn = new ObjectInputStream(in);
             this.g = new EventGraph();
-            this.g.readExternal(objIn);
+            this.g.readExternal(engine, objIn);
             int pinCount = objIn.readInt();
             this.selectedPins = new HashSet<>();
             for (int i = 0; i < pinCount; i++) {

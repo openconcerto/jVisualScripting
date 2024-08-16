@@ -6,6 +6,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import com.jvisualscripting.event.StartEventNode;
 import com.jvisualscripting.filefunction.FileSaveString;
@@ -41,6 +46,7 @@ import com.jvisualscripting.variable.FloatSplitter;
 import com.jvisualscripting.variable.FloatVariable;
 import com.jvisualscripting.variable.IndexOf;
 import com.jvisualscripting.variable.IntegerAdder;
+import com.jvisualscripting.variable.IntegerComparator;
 import com.jvisualscripting.variable.IntegerDivider;
 import com.jvisualscripting.variable.IntegerFormatter;
 import com.jvisualscripting.variable.IntegerModulus;
@@ -63,7 +69,7 @@ import com.jvisualscripting.variable.StringVariable;
 // TODO : JSOUP
 
 public class Engine {
-    public static final String VERSION = "1.2";
+    public static final String DEFAULT_VERSION = "1.3";
     private static Engine defaultEngine;
     private Map<Integer, Class<? extends Pin>> mapTypePin = new HashMap<>();
     private Map<Class<? extends Pin>, Integer> mapClassPin = new HashMap<>();
@@ -72,9 +78,62 @@ public class Engine {
     private Map<Class<? extends Node>, String> mapClassNodeType = new HashMap<>();
     private Map<Class<? extends Node>, String> mapClassNodeName = new HashMap<>();
     private String id;
+    private String version;
 
     public Engine(String id) {
         this.id = id;
+        this.version = DEFAULT_VERSION;
+    }
+
+    @SuppressWarnings("unchecked")
+    public void initFromJSON(JSONObject obj) throws JSONException, ClassNotFoundException {
+        this.mapTypePin.clear();
+        this.mapClassPin.clear();
+        this.mapTypeNode.clear();
+        this.mapClassNode.clear();
+        this.mapClassNodeType.clear();
+        this.mapClassNodeName.clear();
+        this.version = obj.getString("version");
+        this.id = obj.getString("id");
+        JSONArray pTypes = obj.getJSONArray("pin-types");
+        final int pTypesSize = pTypes.size();
+        for (int i = 0; i < pTypesSize; i++) {
+            JSONObject o = pTypes.getJSONObject(i);
+            registerPinType(o.getInt("id"), (Class<? extends Pin>) Class.forName(o.getString("class")));
+        }
+        JSONArray nTypes = obj.getJSONArray("node-types");
+        final int nTypesSize = pTypes.size();
+        for (int i = 0; i < nTypesSize; i++) {
+            JSONObject o = nTypes.getJSONObject(i);
+            registerNodeType(o.getInt("id"), o.getString("type"), o.getString("name"), (Class<? extends Node>) Class.forName(o.getString("class")));
+        }
+    }
+
+    public JSONObject toJSON() {
+        JSONObject result = new JSONObject();
+        result.put("version", this.version);
+        result.put("id", this.id);
+        JSONArray pTypes = new JSONArray();
+        for (Entry<Integer, Class<? extends Pin>> p : this.mapTypePin.entrySet()) {
+            JSONObject o = new JSONObject();
+            o.put("id", p.getKey());
+            o.put("class", p.getValue().getName());
+            pTypes.add(o);
+        }
+        result.put("pin-types", pTypes);
+        JSONArray nTypes = new JSONArray();
+        for (Entry<Integer, Class<? extends Node>> p : this.mapTypeNode.entrySet()) {
+            JSONObject o = new JSONObject();
+            o.put("id", p.getKey());
+            final Class<? extends Node> c = p.getValue();
+            o.put("class", c.getName());
+            o.put("type", this.mapClassNodeType.get(c));
+            o.put("name", this.mapClassNodeName.get(c));
+            pTypes.add(o);
+        }
+        result.put("node-types", nTypes);
+
+        return result;
     }
 
     public static Engine getDefault() {
@@ -126,7 +185,7 @@ public class Engine {
             defaultEngine.registerNodeType(51, "Integer operation", "Substract", IntegerSubstract.class);
             defaultEngine.registerNodeType(52, "Integer operation", "Divide", IntegerDivider.class);
             defaultEngine.registerNodeType(53, "Integer operation", "Modulus", IntegerModulus.class);
-
+            defaultEngine.registerNodeType(54, "Integer operation", "Comparator", IntegerComparator.class);
             defaultEngine.registerNodeType(100, "Execution", "External Command", ExternalCommand.class);
             defaultEngine.registerNodeType(200, "Variable", "File", StringToFile.class);
             defaultEngine.registerNodeType(201, "IO", "Save String to File", FileSaveString.class);
@@ -191,10 +250,10 @@ public class Engine {
 
     public static void main(String[] args) {
         if (args.length == 0) {
-            System.out.println("jVisualScripting engine (" + VERSION + ")");
+            System.out.println("jVisualScripting engine (" + DEFAULT_VERSION + ")");
             System.out.println();
             System.out.println("Usage: ");
-            System.out.println("  java -jar jVisualScripting-" + VERSION + ".jar yourscript.jvsz");
+            System.out.println("  java -jar jVisualScripting-" + DEFAULT_VERSION + ".jar yourscript.jvsz");
 
         } else {
             String script = args[0];

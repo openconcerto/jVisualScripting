@@ -3,7 +3,6 @@ package com.jvisualscripting;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.Externalizable;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -30,7 +29,7 @@ import org.json.JSONObject;
 import com.jvisualscripting.event.StartEventNode;
 import com.jvisualscripting.function.EndNode;
 
-public class EventGraph implements Externalizable {
+public class EventGraph {
 
     private static final byte[] FILE_HEADER = "jVisualScripting".getBytes();
     private List<Node> nodes = new ArrayList<>();
@@ -43,6 +42,10 @@ public class EventGraph implements Externalizable {
 
     public EventGraph() {
         this.uuid = UUID.randomUUID().toString();
+    }
+
+    public EventGraph(String uuid) {
+        this.uuid = uuid;
     }
 
     public void addListener(EventGraphListener l) {
@@ -191,7 +194,7 @@ public class EventGraph implements Externalizable {
 
                 Node n = (Node) ctor.newInstance();
                 //
-                n.initFromJSON(obj, e);
+                n.initFromJSON(objNode, e);
 
                 if (n.getInputSize() > 0) {
                     for (Pin p : n.getInputs()) {
@@ -258,13 +261,12 @@ public class EventGraph implements Externalizable {
         }
     }
 
-    @Override
-    public void writeExternal(ObjectOutput out) throws IOException {
-        Engine e = Engine.getDefault();
+    public void writeExternal(Engine e, ObjectOutput out) throws IOException {
+
         out.writeInt(this.nodes.size());
         for (Node n : this.nodes) {
             out.writeInt(e.getTypeForNode(n.getClass()));
-            n.writeExternal(out);
+            n.writeExternal(e, out);
         }
         out.writeInt(this.links.size());
         for (Link l : this.links) {
@@ -283,11 +285,10 @@ public class EventGraph implements Externalizable {
 
     }
 
-    @Override
-    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+    public void readExternal(Engine e, ObjectInput in) throws IOException, ClassNotFoundException {
         int nodeCount = in.readInt();
         this.nodes = new ArrayList<>(nodeCount);
-        Engine e = Engine.getDefault();
+
         Map<Integer, Pin> pinMap = new HashMap<>();
         for (int i = 0; i < nodeCount; i++) {
             int type = in.readInt();
@@ -296,7 +297,7 @@ public class EventGraph implements Externalizable {
                 Constructor<?> ctor = c.getDeclaredConstructor();
 
                 Node n = (Node) ctor.newInstance();
-                n.readExternal(in);
+                n.readExternal(e, in);
                 if (n.getInputSize() > 0) {
                     for (Pin p : n.getInputs()) {
                         pinMap.put(p.getId(), p);
@@ -425,17 +426,25 @@ public class EventGraph implements Externalizable {
     }
 
     public void save(File f) throws IOException {
+        save(f, Engine.getDefault());
+    }
+
+    public void save(File f, Engine e) throws IOException {
         try (FileOutputStream fileOutputStream = new FileOutputStream(f)) {
             fileOutputStream.write(FILE_HEADER);
             DeflaterOutputStream dos = new DeflaterOutputStream(fileOutputStream);
             ObjectOutputStream o = new ObjectOutputStream(new BufferedOutputStream(dos));
-            this.writeExternal(o);
+            this.writeExternal(e, o);
             o.close();
             dos.close();
         }
     }
 
     public void load(File f) throws IOException, ClassNotFoundException {
+        load(f, Engine.getDefault());
+    }
+
+    public void load(File f, Engine e) throws IOException, ClassNotFoundException {
 
         try (FileInputStream fileInputStream = new FileInputStream(f)) {
             byte[] h = new byte[FILE_HEADER.length];
@@ -453,7 +462,7 @@ public class EventGraph implements Externalizable {
             final byte[] bytes = bOut.toByteArray();
             // Deserialize
             final ObjectInputStream oIn = new ObjectInputStream(new ByteArrayInputStream(bytes));
-            this.readExternal(oIn);
+            this.readExternal(e, oIn);
             oIn.close();
         }
     }
@@ -469,12 +478,16 @@ public class EventGraph implements Externalizable {
     }
 
     public boolean isBlocked() {
+        return getFirstBlockedNode() != null;
+    }
+
+    public Node getFirstBlockedNode() {
         for (Node n : this.nodes) {
             if (n.isBlocked()) {
-                return true;
+                return n;
             }
         }
-        return false;
+        return null;
     }
 
     public void resume() {

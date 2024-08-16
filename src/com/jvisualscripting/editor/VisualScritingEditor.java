@@ -17,26 +17,20 @@ import javax.swing.UIManager;
 
 import com.jvisualscripting.Engine;
 
-// TODO : node : endline String
-
-// TODO : JSOUP
-
-// TODO : Step
-
 public class VisualScritingEditor extends JFrame {
 
-    VisualScritingEditorPanel visualEditorPanel;
+    VisualScritingEditorMainPanel visualEditorPanel;
 
     public VisualScritingEditor(Engine engine) {
         setTitle("jVisualScripting Editor");
-        this.visualEditorPanel = new VisualScritingEditorPanel(engine);
+        this.visualEditorPanel = new VisualScritingEditorMainPanel(engine);
         setContentPane(this.visualEditorPanel);
         JMenuBar menubar = createJMenuBar();
         setJMenuBar(menubar);
     }
 
     public void addStartAndEndNodes() {
-        this.visualEditorPanel.addStartAndEndNodes();
+        this.visualEditorPanel.getEditor().addStartAndEndNodes();
 
     }
 
@@ -45,7 +39,7 @@ public class VisualScritingEditor extends JFrame {
 
     }
 
-    public VisualScritingEditorPanel getVisualEditorPanel() {
+    public VisualScritingEditorMainPanel getVisualEditorPanel() {
         return this.visualEditorPanel;
     }
 
@@ -65,7 +59,7 @@ public class VisualScritingEditor extends JFrame {
                 try {
                     // TODO ask if not saved
                     VisualScritingEditor.this.visualEditorPanel.load(null);
-                    VisualScritingEditor.this.visualEditorPanel.addStartAndEndNodes();
+                    VisualScritingEditor.this.visualEditorPanel.getEditor().addStartAndEndNodes();
 
                 } catch (Exception e1) {
                     e1.printStackTrace();
@@ -143,7 +137,7 @@ public class VisualScritingEditor extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    VisualScritingEditor.this.visualEditorPanel.getEditor().undo();
+                    VisualScritingEditor.this.visualEditorPanel.getEditor().getEditor().undo();
                 } catch (IOException e1) {
                     e1.printStackTrace();
                 }
@@ -158,7 +152,7 @@ public class VisualScritingEditor extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    VisualScritingEditor.this.visualEditorPanel.getEditor().redo();
+                    VisualScritingEditor.this.visualEditorPanel.getEditor().getEditor().redo();
                 } catch (IOException e1) {
                     e1.printStackTrace();
                 }

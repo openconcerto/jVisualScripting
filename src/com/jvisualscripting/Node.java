@@ -1,6 +1,5 @@
 package com.jvisualscripting;
 
-import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
@@ -14,7 +13,7 @@ import org.json.JSONObject;
 import com.jvisualscripting.Pin.PinMode;
 import com.jvisualscripting.editor.EventGraphEditorPanel;
 
-public abstract class Node implements Externalizable {
+public abstract class Node {
     protected List<Pin> inputs;
     protected List<Pin> outputs;
     protected EventGraph graph;
@@ -241,13 +240,12 @@ public abstract class Node implements Externalizable {
         return obj;
     }
 
-    @Override
-    public void writeExternal(ObjectOutput out) throws IOException {
+    public void writeExternal(Engine e, ObjectOutput out) throws IOException {
         out.writeInt(this.id);
         out.writeShort(this.x);
         out.writeShort(this.y);
         out.writeUTF(this.name);
-        Engine e = Engine.getDefault();
+
         // Inputs
         if (this.inputs == null) {
             out.writeByte(0);
@@ -272,6 +270,9 @@ public abstract class Node implements Externalizable {
     }
 
     public void initFromJSON(JSONObject obj, Engine e) throws IOException {
+        if (!obj.has("id")) {
+            throw new IllegalArgumentException("no id in : " + obj.toString());
+        }
         this.id = obj.getInt("id");
         if (this.id > lastUsedId) {
             lastUsedId = this.id;
@@ -329,8 +330,7 @@ public abstract class Node implements Externalizable {
 
     }
 
-    @Override
-    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+    public void readExternal(Engine e, ObjectInput in) throws IOException, ClassNotFoundException {
         this.id = in.readInt();
         if (this.id > lastUsedId) {
             lastUsedId = this.id;
@@ -338,7 +338,7 @@ public abstract class Node implements Externalizable {
         this.x = in.readShort();
         this.y = in.readShort();
         this.setName(in.readUTF());
-        Engine e = Engine.getDefault();
+
         // Inputs
         int inputCount = in.readByte();
         if (inputCount == 0) {

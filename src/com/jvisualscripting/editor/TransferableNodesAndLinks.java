@@ -3,7 +3,10 @@ package com.jvisualscripting.editor;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
+import java.io.Externalizable;
 import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
@@ -16,7 +19,7 @@ import com.jvisualscripting.Link;
 import com.jvisualscripting.Node;
 import com.jvisualscripting.Pin;
 
-public class TransferableNodesAndLinks implements Transferable, Serializable {
+public class TransferableNodesAndLinks implements Transferable, Serializable, Externalizable {
 
     private static final long serialVersionUID = -3257245011954729496L;
 
@@ -24,8 +27,10 @@ public class TransferableNodesAndLinks implements Transferable, Serializable {
 
     private List<Node> nodes;
     private List<Link> links;
+    private final Engine engine;
 
-    public TransferableNodesAndLinks(List<Node> nodes, List<Link> links) {
+    public TransferableNodesAndLinks(Engine engine, List<Node> nodes, List<Link> links) {
+        this.engine = engine;
         this.nodes = nodes;
         this.links = links;
 
@@ -60,13 +65,13 @@ public class TransferableNodesAndLinks implements Transferable, Serializable {
         return null;
     }
 
-    // implementation of Serializable
-    private void writeObject(java.io.ObjectOutputStream out) throws IOException {
+    @Override
+    public void writeExternal(ObjectOutput out) throws IOException {
         out.writeInt(this.nodes.size());
-        final Engine e = Engine.getDefault();
+
         for (Node n : this.nodes) {
-            out.writeInt(e.getTypeForNode(n.getClass()));
-            n.writeExternal(out);
+            out.writeInt(engine.getTypeForNode(n.getClass()));
+            n.writeExternal(engine, out);
         }
         out.writeByte(this.links.size());
         for (Link l : this.links) {
@@ -76,20 +81,20 @@ public class TransferableNodesAndLinks implements Transferable, Serializable {
 
     }
 
-    // implementation of Serializable
-    private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
+    @Override
+    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
         final int size = in.readInt();
 
         this.nodes = new ArrayList<>(size);
-        final Engine e = Engine.getDefault();
+
         Map<Integer, Pin> pinMap = new HashMap<>();
         for (int i = 0; i < size; i++) {
             final int type = in.readInt();
-            Class<? extends Node> c = e.getClassForNodeType(type);
+            Class<? extends Node> c = engine.getClassForNodeType(type);
             try {
                 Constructor<?> ctor = c.getDeclaredConstructor();
                 final Node n = (Node) ctor.newInstance();
-                n.readExternal(in);
+                n.readExternal(engine, in);
                 if (n.getInputSize() > 0) {
                     for (Pin p : n.getInputs()) {
                         pinMap.put(p.getId(), p);

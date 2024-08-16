@@ -105,6 +105,7 @@ public class EventGraphEditorPanel extends JPanel implements Scrollable {
 
     // TODO : cTRL ou SHIFT + rect de selection
     private final Engine engine;
+    private boolean executionAllowed = true;
 
     public EventGraphEditorPanel(Engine engine, EventGraph g) {
         this.engine = engine;
@@ -993,7 +994,7 @@ public class EventGraphEditorPanel extends JPanel implements Scrollable {
                 snapToGrid(Arrays.asList(node));
             }
         });
-        if (node.getNode() instanceof EventNode) {
+        if (executionAllowed && node.getNode() instanceof EventNode) {
 
             final JMenuItem menuItem = new JMenuItem("Trigger Event");
             menuItem.addActionListener(new ActionListener() {
@@ -1012,7 +1013,7 @@ public class EventGraphEditorPanel extends JPanel implements Scrollable {
             popup.add(menuItem);
         }
 
-        if (node.getNode() instanceof FlowNode && node.getNode().getInputSize() == 0) {
+        if (executionAllowed && node.getNode() instanceof FlowNode && node.getNode().getInputSize() == 0) {
             // Nodes with inputs cannot started because could introduce an infinite loop
             final JMenuItem menuItem = new JMenuItem("Execute");
             menuItem.addActionListener(new ActionListener() {
@@ -1408,4 +1409,7 @@ public class EventGraphEditorPanel extends JPanel implements Scrollable {
         repaint();
     }
 
+    public void setExecutionAllowed(boolean b) {
+        this.executionAllowed = b;
+    }
 }

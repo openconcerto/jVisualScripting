@@ -1,5 +1,7 @@
 # jVisualScripting
- Visual Scripting Engine for Java.
+ Visual Scripting Engine for Java. 
+ 
+ Small (<500KB), efficient and with 0 external dependencies.
 
 # Overview
 This Java project provides a powerful workflow engine and a user-friendly visual editor. The workflow engine allows users to define, execute, and manage complex business processes, while the visual editor offers an intuitive interface for designing workflows without requiring deep technical knowledge.

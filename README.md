@@ -1,5 +1,7 @@
 # jVisualScripting
- Visual Scripting Engine for Java.
+ Visual Scripting Engine for Java. 
+ 
+ Small (<500KB), efficient and with 0 external dependencies.
 
 # Overview
 This Java project provides a powerful workflow engine and a user-friendly visual editor. The workflow engine allows users to define, execute, and manage complex business processes, while the visual editor offers an intuitive interface for designing workflows without requiring deep technical knowledge.
@@ -30,16 +32,16 @@ Additionally, the engine can be embedded in your Java application or run workflo
 
 # Execution of a workflow in command line 
 ```
-java -jar jVisualScripting-1.2.jar helloworld.jvsz
+java -jar jVisualScripting-1.3.jar helloworld.jvsz
 ```
 You can pass parameters using key=value format (use Parameter nodes to access them), for example
 ```
-java -jar jVisualScripting-1.2.jar helloworld.jvsz name=you
+java -jar jVisualScripting-1.3.jar helloworld.jvsz name=you
 ```
 
 # Embbeding jVisualScript
 
-Just add jVisualScripting-1.2.jar in your classpath.
+Just add jVisualScripting-1.3.jar in your classpath.
 
 You can build a workflow using the EventGraph class.
 

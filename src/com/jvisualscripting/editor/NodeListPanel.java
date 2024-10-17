@@ -130,7 +130,8 @@ public class NodeListPanel extends JPanel {
             }
         });
         final Color bgColor = new Color(248, 248, 248);
-        JTable table = new JTable(dm) {
+        final Color fgColor = new Color(0, 0, 0);
+				JTable table = new JTable(dm) {
 
             @Override
             public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {

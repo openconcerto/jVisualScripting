@@ -29,7 +29,8 @@ public class StringLength extends Node {
     }
 
     public StringPin getStringInputPin() {
-        return (StringPin) getInputs().get(0).getConnectedPin();
+        final StringPin str = (StringPin) getInputs().get(0);
+        return (StringPin) str.getConnectedOutputPin();
     }
 
     @Override

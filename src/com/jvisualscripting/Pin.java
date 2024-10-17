@@ -4,6 +4,8 @@ import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.json.JSONObject;
 
@@ -12,7 +14,7 @@ import com.jvisualscripting.editor.TempPin;
 public abstract class Pin implements Externalizable {
     protected Node node;
     private String name;
-    private Pin connectedPin;
+    private List<Pin> connectedPins = new ArrayList<>(1);
     private PinMode mode;
     private int id;
     private static int lastUsedId = 0;
@@ -58,15 +60,24 @@ public abstract class Pin implements Externalizable {
         return this.mode;
     }
 
-    public Pin getConnectedPin() {
-        return this.connectedPin;
+    public Pin getFirstConnectedPin() {
+        if (this.connectedPins.isEmpty()) {
+            return null;
+        }
+        return this.connectedPins.get(0);
+    }
+
+    public List<Pin> getConnectedPins() {
+        return this.connectedPins;
     }
 
     public boolean canConnectPin(Pin pin) {
         if (pin.getNode().equals(getNode())) {
             return false;
         }
-
+        if (this.connectedPins.contains(pin)) {
+            return false;
+        }
         if (pin instanceof TempPin) {
             return true;
         }
@@ -76,17 +87,46 @@ public abstract class Pin implements Externalizable {
         return pin.getMode() == PinMode.OUTPUT && this.getMode() == PinMode.INPUT;
     }
 
-    public void setConnectedPin(Pin connectedPin) {
-        this.connectedPin = connectedPin;
+    public void addConnectedPin(Pin pin) {
+        if (pin == null) {
+            throw new IllegalArgumentException("null pin");
+        }
+        if (this.connectedPins.contains(pin)) {
+            throw new IllegalArgumentException(pin + " is already connected");
+        }
+        this.connectedPins.add(pin);
+    }
+
+    public void removeConnectedPins() {
+        this.connectedPins.clear();
+    }
+
+    public void removeConnectedPin(Pin toPin) {
+        boolean removed = this.connectedPins.remove(toPin);
+        if (!removed) {
+            System.err.println("Pin.removeConnectedPin() " + toPin + "+connected pins (" + (this.connectedPins.size()) + ")");
+            for (Pin p : this.connectedPins) {
+                System.err.println(p);
+            }
+            throw new IllegalArgumentException(toPin + " was not connected to " + this);
+        }
     }
 
     public boolean isConnected() {
-        return this.connectedPin != null;
+        if (this.connectedPins.isEmpty()) {
+            return false;
+        }
+        for (Pin p : this.connectedPins) {
+            if (!(p instanceof TempPin)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
     public String toString() {
-        return super.toString() + " " + this.name + " [" + getMode().name() + "]";
+        return super.toString() + " " + this.name + " [" + getMode().name() + ", node:" + getNode() + "]";
 
     }
 

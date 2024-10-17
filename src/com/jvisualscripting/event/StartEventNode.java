@@ -19,7 +19,7 @@ public class StartEventNode extends EventNode {
         final Pin pin = this.outputs.get(0);
         boolean succeed = false;
         if (pin.isConnected()) {
-            succeed = pin.getConnectedPin().getNode().execute();
+            succeed = pin.getFirstConnectedPin().getNode().execute();
         }
         setActive(false);
         return succeed;

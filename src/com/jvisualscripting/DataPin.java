@@ -37,6 +37,10 @@ public abstract class DataPin extends Pin {
         return (pin instanceof DataPin);
     }
 
+    public DataPin getConnectedOutputPin() {
+        return (DataPin) this.getFirstConnectedPin();
+    }
+
     @Override
     public void writeExternal(ObjectOutput out) throws IOException {
         super.writeExternal(out);

@@ -1,11 +1,14 @@
 package com.jvisualscripting.editor.editors;
 
+import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
@@ -43,12 +46,16 @@ public class StringVariableEditor implements NodeEditor {
         c.gridx = 0;
         c.weightx = 0;
         p.add(new JLabel("Value", SwingConstants.RIGHT), c);
-        c.gridx++;
-
+        c.gridy++;
+        c.gridwidth = 2;
         c.weightx = 1;
-
-        final JTextField text = new JTextField(v.getValue());
-        p.add(text, c);
+        c.weighty = 1;
+        c.fill = GridBagConstraints.BOTH;
+        final JTextArea text = new JTextArea(v.getValue());
+        text.setFont(new JTextField().getFont());
+        p.add(new JScrollPane(text), c);
+        p.setMinimumSize(new Dimension(100, 200));
+        p.setPreferredSize(new Dimension(100, 200));
 
         final SwingThrottle t = new SwingThrottle(100, new Runnable() {
 

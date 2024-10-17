@@ -139,6 +139,13 @@ public class NodeListPanel extends JPanel {
                 if (!comp.getBackground().equals(getSelectionBackground())) {
                     comp.setBackground(row % 2 == 0 ? bgColor : Color.WHITE);
                 }
+                boolean selection = false;
+                for (int index : getSelectedRows()) {
+                    if (row == index) {
+                        selection = true;
+                    }
+                }
+                comp.setForeground(selection ? Color.WHITE : Color.BLACK);
                 return comp;
             }
 

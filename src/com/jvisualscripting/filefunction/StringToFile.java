@@ -54,7 +54,7 @@ public class StringToFile extends Node {
     }
 
     private File getFile() {
-        Pin p = getPathInputPin().getConnectedPin();
+        Pin p = getPathInputPin().getConnectedOutputPin();
         if (p == null) {
             return null;
         }
@@ -76,5 +76,4 @@ public class StringToFile extends Node {
         return true;
     }
 
-   
 }

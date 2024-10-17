@@ -21,11 +21,13 @@ public class StringEquals extends Node {
     }
 
     public StringPin getStringInputPin1() {
-        return (StringPin) getInputs().get(0).getConnectedPin();
+        final StringPin str1 = (StringPin) getInputs().get(0);
+        return (StringPin) str1.getConnectedOutputPin();
     }
 
     public StringPin getStringInputPin2() {
-        return (StringPin) getInputs().get(1).getConnectedPin();
+        final StringPin str2 = (StringPin) getInputs().get(1);
+        return (StringPin) str2.getConnectedOutputPin();
     }
 
     public Pin getLengthOuputPinEquals() {

@@ -27,7 +27,7 @@ public class FloatFormatter extends Node {
     @Override
     public Object getOuputValue(DataPin pin) {
         if (pin == getDataOuputPin()) {
-            Pin p = getIntegerInputPin().getConnectedPin();
+            Pin p = getIntegerInputPin().getConnectedOutputPin();
             if (p == null) {
                 return "";
             }

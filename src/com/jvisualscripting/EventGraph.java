@@ -29,6 +29,11 @@ import org.json.JSONObject;
 import com.jvisualscripting.event.StartEventNode;
 import com.jvisualscripting.function.EndNode;
 
+/**
+ * Represents an event graph that consists of nodes, links, and lanes. It supports adding, removing,
+ * and exporting the state of nodes and links. The graph can be serialized and deserialized for
+ * persistent storage in JSON or on binary format.
+ */
 public class EventGraph {
 
     private static final byte[] FILE_HEADER = "jVisualScripting".getBytes();
@@ -40,6 +45,9 @@ public class EventGraph {
 
     private String uuid;
 
+    /**
+     * Creates a new EventGraph with a unique UUID.
+     */
     public EventGraph() {
         this.uuid = UUID.randomUUID().toString();
     }
@@ -82,7 +90,23 @@ public class EventGraph {
         this.links.add(link);
     }
 
+    /**
+     * Creates and adds a link between two pins.
+     * 
+     * The nodes of the pins are automatically added to the graph
+     *
+     * @param from the source pin
+     * @param to the destination pin
+     * @return the created link
+     */
     public Link addLink(Pin from, Pin to) {
+        if (!this.nodes.contains(from.getNode())) {
+            this.add(from.getNode());
+        }
+        if (!this.nodes.contains(to.getNode())) {
+            this.add(to.getNode());
+        }
+
         Link link = new Link(from, to);
         this.links.add(link);
         return link;
@@ -125,14 +149,27 @@ public class EventGraph {
         if (!b) {
             throw new IllegalArgumentException(node + " is not a node of this graph");
         }
+
+        final List<Link> linksToremove = new ArrayList<>(1);
+        for (Link link : this.links) {
+            if (link.getFrom().getNode().equals(node) || link.getTo().getNode().equals(node)) {
+                linksToremove.add(link);
+            }
+        }
+        for (Link link : linksToremove) {
+            remove(link);
+        }
+
     }
 
     public void remove(Link link) {
-        link.getFrom().setConnectedPin(null);
-        link.getTo().setConnectedPin(null);
+        final Pin fromPin = link.getFrom();
+        final Pin toPin = link.getTo();
+        fromPin.removeConnectedPin(toPin);
+        toPin.removeConnectedPins();
         boolean b = this.links.remove(link);
         if (!b) {
-            throw new IllegalArgumentException(link + " is a link of this graph");
+            throw new IllegalArgumentException(link + " is not a link of this graph");
         }
     }
 
@@ -425,6 +462,12 @@ public class EventGraph {
         return false;
     }
 
+    /**
+     * Save in compressed binary format the graph
+     * 
+     * @param f the file to save into
+     * @throws IOException on output error
+     */
     public void save(File f) throws IOException {
         save(f, Engine.getDefault());
     }
@@ -440,11 +483,11 @@ public class EventGraph {
         }
     }
 
-    public void load(File f) throws IOException, ClassNotFoundException {
+    public void load(File f) throws IOException {
         load(f, Engine.getDefault());
     }
 
-    public void load(File f, Engine e) throws IOException, ClassNotFoundException {
+    public void load(File f, Engine e) throws IOException {
 
         try (FileInputStream fileInputStream = new FileInputStream(f)) {
             byte[] h = new byte[FILE_HEADER.length];
@@ -464,6 +507,8 @@ public class EventGraph {
             final ObjectInputStream oIn = new ObjectInputStream(new ByteArrayInputStream(bytes));
             this.readExternal(e, oIn);
             oIn.close();
+        } catch (ClassNotFoundException e1) {
+            throw new IOException(e1);
         }
     }
 

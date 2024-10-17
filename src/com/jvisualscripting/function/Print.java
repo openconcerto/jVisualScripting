@@ -35,14 +35,18 @@ public class Print extends FlowNode {
 
     @Override
     public boolean canBeExecuted() {
-        final DataPin dataPin = (DataPin) this.inputs.get(1);
+        final DataPin dataPin = getStringInputPin();
         return dataPin.isConnected();
     }
 
+    public StringPin getStringInputPin() {
+        return (StringPin) this.inputs.get(1);
+    }
+
     private String getInputValue() {
-        DataPin dataPin = (DataPin) this.inputs.get(1);
+        DataPin dataPin = getStringInputPin();
         if (dataPin.isConnected()) {
-            DataPin oPin = (DataPin) dataPin.getConnectedPin();
+            DataPin oPin = dataPin.getConnectedOutputPin();
             Node previousNode = oPin.getNode();
             Object value = previousNode.getOuputValue(oPin);
             if (value == null) {

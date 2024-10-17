@@ -30,7 +30,7 @@ public class StringToFloat extends Node {
     @Override
     public Object getOuputValue(DataPin pin) {
         if (pin == getDataOuputPin()) {
-            Pin p = getStringInputPin().getConnectedPin();
+            Pin p = getStringInputPin().getConnectedOutputPin();
             if (p == null) {
                 return "";
             }

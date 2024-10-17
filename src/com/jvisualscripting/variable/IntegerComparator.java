@@ -12,8 +12,8 @@ public class IntegerComparator extends Node {
     public IntegerComparator() {
         super("Integer comparator");
         this.inputs = new ArrayList<>(1);
-        this.inputs.add(new FloatPin(this, "Integer A", PinMode.INPUT));
-        this.inputs.add(new FloatPin(this, "Integer B", PinMode.INPUT));
+        this.inputs.add(new IntegerPin(this, "Integer A", PinMode.INPUT));
+        this.inputs.add(new IntegerPin(this, "Integer B", PinMode.INPUT));
 
         this.outputs = new ArrayList<>(2);
         this.outputs.add(new BooleanPin(this, "A > B", PinMode.OUTPUT));
@@ -26,11 +26,11 @@ public class IntegerComparator extends Node {
     @Override
     public Object getOuputValue(DataPin pin) {
         if (pin == getDataOuputPin()) {
-            Pin pA = getInputs().get(0).getConnectedPin();
+            Pin pA = ((DataPin) getInputs().get(0)).getConnectedOutputPin();
             if (pA == null) {
                 return null;
             }
-            Pin pB = getInputs().get(1).getConnectedPin();
+            Pin pB = ((DataPin) getInputs().get(1)).getConnectedOutputPin();
             if (pB == null) {
                 return null;
             }

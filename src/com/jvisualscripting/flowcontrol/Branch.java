@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import com.jvisualscripting.ExecutionPin;
 import com.jvisualscripting.FlowNode;
 import com.jvisualscripting.Node;
-import com.jvisualscripting.Pin;
 import com.jvisualscripting.Pin.PinMode;
 import com.jvisualscripting.variable.BooleanPin;
 
@@ -24,10 +23,10 @@ public class Branch extends FlowNode {
     @Override
     public boolean execute() {
         this.setActive(true);
-        Pin dataPin = this.getInputs().get(1);
+        BooleanPin dataPin = (BooleanPin) this.getInputs().get(1);
         boolean succeed = false;
         if (dataPin.isConnected()) {
-            BooleanPin oPin = (BooleanPin) dataPin.getConnectedPin();
+            BooleanPin oPin = (BooleanPin) dataPin.getConnectedOutputPin();
             Node previousNode = oPin.getNode();
             Boolean b = (Boolean) (previousNode.getOuputValue(oPin));
             if (Boolean.TRUE.equals(b)) {

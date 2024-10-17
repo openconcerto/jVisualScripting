@@ -12,15 +12,12 @@ public class ForLoop extends FlowNode {
 
     public ForLoop() {
         super("For Loop");
-
         this.inputs.add(new IntegerPin(this, "First Index", PinMode.INPUT));
         this.inputs.add(new IntegerPin(this, "Last Index", PinMode.INPUT));
-
         this.outputs.clear();
         this.outputs.add(new ExecutionPin(this, "Loop Body", PinMode.OUTPUT));
         this.outputs.add(new IntegerPin(this, "Index", PinMode.OUTPUT));
         this.outputs.add(new ExecutionPin(this, "Completed", PinMode.OUTPUT));
-        System.out.println("ForLoop.ForLoop()");
     }
 
     @Override
@@ -30,11 +27,11 @@ public class ForLoop extends FlowNode {
         int lastIndex = 0;
         boolean succeed = false;
         if (this.getInputs().get(1).isConnected()) {
-            IntegerPin in = (IntegerPin) this.getInputs().get(1).getConnectedPin();
+            IntegerPin in = (IntegerPin) ((DataPin) this.getInputs().get(1)).getConnectedOutputPin();
             firstIndex = (Integer) in.getNode().getOuputValue(in);
         }
         if (this.getInputs().get(2).isConnected()) {
-            IntegerPin in = (IntegerPin) this.getInputs().get(2).getConnectedPin();
+            IntegerPin in = (IntegerPin) ((DataPin) this.getInputs().get(2)).getConnectedOutputPin();
             lastIndex = (Integer) in.getNode().getOuputValue(in);
         }
         for (int i = firstIndex; i <= lastIndex; i++) {

@@ -26,11 +26,11 @@ public class FloatComparator extends Node {
     @Override
     public Object getOuputValue(DataPin pin) {
         if (pin == getDataOuputPin()) {
-            Pin pA = getInputs().get(0).getConnectedPin();
+            Pin pA = ((DataPin) getInputs().get(0)).getConnectedOutputPin();
             if (pA == null) {
                 return null;
             }
-            Pin pB = getInputs().get(1).getConnectedPin();
+            Pin pB = ((DataPin) getInputs().get(1)).getConnectedOutputPin();
             if (pB == null) {
                 return null;
             }

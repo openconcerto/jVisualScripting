@@ -34,7 +34,7 @@ public class VisualScritingEditor extends JFrame {
 
     }
 
-    public void load(File file) throws Exception {
+    public void load(File file) throws IOException {
         this.visualEditorPanel.load(file);
 
     }
@@ -189,7 +189,7 @@ public class VisualScritingEditor extends JFrame {
         return menubar;
     }
 
-    public static void main(String[] args) throws IOException, ClassNotFoundException {
+    public static void main(String[] args) {
 
         SwingUtilities.invokeLater(new Runnable() {
 

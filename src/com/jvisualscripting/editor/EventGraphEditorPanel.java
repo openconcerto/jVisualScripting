@@ -135,40 +135,40 @@ public class EventGraphEditorPanel extends JPanel implements Scrollable {
                 if (EventGraphEditorPanel.this.temporyLink != null) {
                     needCheckPoint = true;
                     final Pin p = getPinUnder(e.getX(), e.getY());
-                    if (p != null && !p.isConnected()) {
+                    if (p != null) {
+                        // The user want to connect the temporary link to the pin under the mouse
+                        // cursor
                         Pin to = EventGraphEditorPanel.this.temporyLink.getConnectedPin();
+                        remove(EventGraphEditorPanel.this.temporyLink);
+
                         if (to.canConnectPin(p) && p.canConnectPin(to)) {
                             if (EventGraphEditorPanel.this.disabledLink != null) {
-                                EventGraphEditorPanel.this.disabledLink.getLink().getFrom().setConnectedPin(null);
-                                EventGraphEditorPanel.this.disabledLink.getLink().getTo().setConnectedPin(null);
-                                EventGraphEditorPanel.this.graph.remove(EventGraphEditorPanel.this.disabledLink.getLink());
-                                EventGraphEditorPanel.this.vLinks.remove(EventGraphEditorPanel.this.disabledLink);
+                                remove(EventGraphEditorPanel.this.disabledLink);
                             }
                             if (to.getMode() == PinMode.INPUT) {
-                                Link newLink = EventGraphEditorPanel.this.graph.addLink(p, to);
-                                EventGraphEditorPanel.this.vLinks.add(new VLink(newLink));
+                                add(new VLink(new Link(p, to)));
                             } else {
-                                Link newLink = EventGraphEditorPanel.this.graph.addLink(to, p);
-                                EventGraphEditorPanel.this.vLinks.add(new VLink(newLink));
+                                add(new VLink(new Link(to, p)));
                             }
                             EventGraphEditorPanel.this.selectedPins.clear();
 
                         } else {
-                            EventGraphEditorPanel.this.temporyLink.getConnectedPin().setConnectedPin(null);
-                            if (EventGraphEditorPanel.this.disabledLink != null)
-                                EventGraphEditorPanel.this.disabledLink.setEnabled(true);
+                            if (EventGraphEditorPanel.this.disabledLink != null) {
+                                remove(EventGraphEditorPanel.this.disabledLink);
+                                Link link = new Link(EventGraphEditorPanel.this.disabledLink.getLink().getFrom(), EventGraphEditorPanel.this.disabledLink.getLink().getTo());
+                                add(new VLink(link));
+                            }
                         }
                     } else if (EventGraphEditorPanel.this.disabledLink != null) {
-                        EventGraphEditorPanel.this.disabledLink.getLink().getFrom().setConnectedPin(null);
-                        EventGraphEditorPanel.this.disabledLink.getLink().getTo().setConnectedPin(null);
-                        EventGraphEditorPanel.this.graph.remove(EventGraphEditorPanel.this.disabledLink.getLink());
-                        EventGraphEditorPanel.this.vLinks.remove(EventGraphEditorPanel.this.disabledLink);
+                        remove(EventGraphEditorPanel.this.temporyLink);
+                        // Remove disabled link
+                        remove(EventGraphEditorPanel.this.disabledLink);
                     } else {
-                        EventGraphEditorPanel.this.temporyLink.getConnectedPin().setConnectedPin(null);
+                        remove(EventGraphEditorPanel.this.temporyLink);
                     }
-
+                    EventGraphEditorPanel.this.temporyLink = null;
                 }
-                EventGraphEditorPanel.this.temporyLink = null;
+
                 EventGraphEditorPanel.this.disabledLink = null;
                 EventGraphEditorPanel.this.selectedPinLocation = null;
                 repaint();
@@ -198,6 +198,7 @@ public class EventGraphEditorPanel extends JPanel implements Scrollable {
 
                 VNode node = getVNodeUnder(e.getX(), e.getY());
                 if (node != null) {
+                    // The user clicked on a node
                     if (!e.isControlDown() && (!EventGraphEditorPanel.this.selectedNodes.contains(node) || EventGraphEditorPanel.this.selectedNodes.isEmpty())) {
                         EventGraphEditorPanel.this.selectedNodes.clear();
                     }
@@ -225,9 +226,11 @@ public class EventGraphEditorPanel extends JPanel implements Scrollable {
 
                     Pin pin = getPinUnder(e.getX(), e.getY());
                     if (pin != null) {
+                        // The user clicked on a pin
                         EventGraphEditorPanel.this.selectedPins.add(pin);
                         EventGraphEditorPanel.this.selectedPinLocation = e.getPoint();
-                        if (pin.getConnectedPin() == null) {
+                        if (!pin.isConnected()) {
+                            // Create a temporary link the user can move to connect to an other pin
                             Pin from;
                             Pin to;
                             if (pin.getMode().equals(PinMode.OUTPUT)) {
@@ -238,6 +241,8 @@ public class EventGraphEditorPanel extends JPanel implements Scrollable {
                                 to = pin;
                             }
                             EventGraphEditorPanel.this.temporyLink = new HalfConnectedVLink(from, to);
+                            add(EventGraphEditorPanel.this.temporyLink);
+
                         }
                     }
                     repaint();
@@ -378,28 +383,33 @@ public class EventGraphEditorPanel extends JPanel implements Scrollable {
                         VLink l = getVLink(EventGraphEditorPanel.this.selectedPinLocation.x, EventGraphEditorPanel.this.selectedPinLocation.y);
                         if (l != null) {
                             // User is detaching a link
-                            EventGraphEditorPanel.this.disabledLink = l;
-                            l.setEnabled(false);
                             Pin pin = getPinUnder(EventGraphEditorPanel.this.selectedPinLocation.x, EventGraphEditorPanel.this.selectedPinLocation.y);
-                            EventGraphEditorPanel.this.selectedPinLocation = null;
-                            Pin from;
-                            Pin to;
-                            Pin p2 = l.getLink().getTo();
-                            if (p2.equals(pin)) {
-                                p2 = l.getLink().getFrom();
-                            }
 
-                            if (pin.getMode().equals(PinMode.INPUT)) {
-                                from = p2;
-                                to = new TempPin(x, y, PinMode.OUTPUT);
-                                l.getLink().getTo().setConnectedPin(null);
-                            } else {
-                                from = new TempPin(x, y, PinMode.INPUT);
-                                to = p2;
-                                l.getLink().getFrom().setConnectedPin(null);
-                            }
-                            EventGraphEditorPanel.this.temporyLink = new HalfConnectedVLink(from, to);
+                            if (pin.getConnectedPins().size() < 2) {
 
+                                EventGraphEditorPanel.this.disabledLink = l;
+                                l.setEnabled(false);
+
+                                EventGraphEditorPanel.this.selectedPinLocation = null;
+                                Pin from;
+                                Pin to;
+                                Pin p2 = l.getLink().getTo();
+                                if (p2.equals(pin)) {
+                                    p2 = l.getLink().getFrom();
+                                }
+
+                                if (pin.getMode().equals(PinMode.INPUT)) {
+                                    from = p2;
+                                    to = new TempPin(x, y, PinMode.OUTPUT);
+
+                                } else {
+                                    from = new TempPin(x, y, PinMode.INPUT);
+                                    to = p2;
+
+                                }
+                                EventGraphEditorPanel.this.temporyLink = new HalfConnectedVLink(from, to);
+                                add(EventGraphEditorPanel.this.temporyLink);
+                            }
                         }
                         repaint();
                     }
@@ -411,7 +421,7 @@ public class EventGraphEditorPanel extends JPanel implements Scrollable {
                     EventGraphEditorPanel.this.temporyLink.getTempPin().setLocation(x, y);
                     EventGraphEditorPanel.this.selectedPins.add(EventGraphEditorPanel.this.temporyLink.getConnectedPin());
                     final Pin p = getPinUnder(x, y);
-                    if (p != null && !p.isConnected()) {
+                    if (p != null) {
                         Pin to = EventGraphEditorPanel.this.temporyLink.getConnectedPin();
                         if (to.canConnectPin(p) && p.canConnectPin(to)) {
                             EventGraphEditorPanel.this.selectedPins.add(p);
@@ -652,6 +662,12 @@ public class EventGraphEditorPanel extends JPanel implements Scrollable {
             }
 
         });
+
+    }
+
+    protected void add(VLink l) {
+        this.vLinks.add(l);
+        this.graph.add(l.getLink());
 
     }
 
@@ -994,7 +1010,7 @@ public class EventGraphEditorPanel extends JPanel implements Scrollable {
                 snapToGrid(Arrays.asList(node));
             }
         });
-        if (executionAllowed && node.getNode() instanceof EventNode) {
+        if (this.executionAllowed && node.getNode() instanceof EventNode) {
 
             final JMenuItem menuItem = new JMenuItem("Trigger Event");
             menuItem.addActionListener(new ActionListener() {
@@ -1013,7 +1029,7 @@ public class EventGraphEditorPanel extends JPanel implements Scrollable {
             popup.add(menuItem);
         }
 
-        if (executionAllowed && node.getNode() instanceof FlowNode && node.getNode().getInputSize() == 0) {
+        if (this.executionAllowed && node.getNode() instanceof FlowNode && node.getNode().getInputSize() == 0) {
             // Nodes with inputs cannot started because could introduce an infinite loop
             final JMenuItem menuItem = new JMenuItem("Execute");
             menuItem.addActionListener(new ActionListener() {
@@ -1105,15 +1121,15 @@ public class EventGraphEditorPanel extends JPanel implements Scrollable {
         Node n = node.getNode();
         List<VLink> linksToRemove = new ArrayList<>();
         for (VLink v : this.vLinks) {
-            if (v.getLink().getFrom().getNode() == n) {
+            final Pin fromPin = v.getLink().getFrom();
+            final Pin toPin = v.getLink().getTo();
+            if (fromPin.getNode() == n) {
                 linksToRemove.add(v);
-                v.getLink().getFrom().getConnectedPin().setConnectedPin(null);
-                v.getLink().getFrom().setConnectedPin(null);
+                fromPin.getConnectedPins().remove(toPin);
             }
-            if (v.getLink().getTo().getNode() == n) {
+            if (toPin.getNode() == n) {
                 linksToRemove.add(v);
-                v.getLink().getTo().getConnectedPin().setConnectedPin(null);
-                v.getLink().getTo().setConnectedPin(null);
+                toPin.getConnectedPins().remove(fromPin);
             }
         }
         for (VLink v : linksToRemove) {
@@ -1125,17 +1141,11 @@ public class EventGraphEditorPanel extends JPanel implements Scrollable {
     }
 
     public void remove(VLink link) {
-        VLink toRemove = null;
-        for (VLink v : this.vLinks) {
-            if (v == link) {
-                toRemove = v;
-                break;
-            }
+        boolean b = this.vLinks.remove(link);
+        if (!b) {
+            throw new IllegalArgumentException("VLink not found");
         }
-        if (toRemove != null) {
-            this.vLinks.remove(toRemove);
-            this.graph.remove(toRemove.getLink());
-        }
+        this.graph.remove(link.getLink());
     }
 
     public VLink getVLink(Pin p) {

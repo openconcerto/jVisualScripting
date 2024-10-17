@@ -12,6 +12,10 @@ public class ExecutionPin extends Pin {
 
     @Override
     public boolean canConnectPin(Pin pin) {
+        if (isConnected()) {
+            return false;
+        }
+
         boolean b = super.canConnectPin(pin);
         if (!b) {
             return false;
@@ -22,5 +26,9 @@ public class ExecutionPin extends Pin {
     @Override
     public Node createCompatibleVariableNode() {
         return null;
+    }
+
+    public Pin getConnectedPin() {
+        return getFirstConnectedPin();
     }
 }

@@ -7,7 +7,6 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.util.concurrent.ExecutionException;
 import java.util.prefs.Preferences;
 
 import javax.swing.JButton;
@@ -25,8 +24,6 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import com.jvisualscripting.Engine;
 import com.jvisualscripting.EventGraph;
 import com.jvisualscripting.event.StartEventNode;
-
-// TODO : Step
 
 public class VisualScritingEditorMainPanel extends JPanel {
 
@@ -48,9 +45,7 @@ public class VisualScritingEditorMainPanel extends JPanel {
         JButton playButton = new JButton("Start");
 
         tools.add(playButton);
-        JButton stopButton = new JButton("Stop");
-        stopButton.setEnabled(false);
-        tools.add(stopButton);
+
         tools.add(this.clearButton);
 
         this.saveButton.setEnabled(false);
@@ -77,13 +72,12 @@ public class VisualScritingEditorMainPanel extends JPanel {
                 StartEventNode firstStartEvent = VisualScritingEditorMainPanel.this.editor.getGraph().getFirstStartEvent();
                 if (firstStartEvent == null) {
                     System.out.print("No start event found");
-                    VisualScritingEditorMainPanel.this.editor.getGraph().dump(System.out);
                     JOptionPane.showMessageDialog(VisualScritingEditorMainPanel.this, "Error : no start event found");
                     return;
                 }
 
                 playButton.setEnabled(false);
-                stopButton.setEnabled(true);
+
                 VisualScritingEditorMainPanel.this.editor.getGraph().clearState();
 
                 SwingWorker<Boolean, Boolean> o = new SwingWorker<Boolean, Boolean>() {
@@ -91,7 +85,6 @@ public class VisualScritingEditorMainPanel extends JPanel {
                     @Override
                     protected Boolean doInBackground() throws Exception {
                         StartEventNode firstStartEvent = VisualScritingEditorMainPanel.this.editor.getGraph().getFirstStartEvent();
-
                         return firstStartEvent.execute();
 
                     }
@@ -100,16 +93,14 @@ public class VisualScritingEditorMainPanel extends JPanel {
                     protected void done() {
                         try {
                             Boolean r = get();
-                            if (!r) {
+                            if (!r.booleanValue()) {
                                 JOptionPane.showMessageDialog(VisualScritingEditorMainPanel.this, "Error during execution");
                             }
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        } catch (ExecutionException e) {
+                        } catch (Exception e) {
                             e.printStackTrace();
                         }
                         playButton.setEnabled(true);
-                        stopButton.setEnabled(false);
+
                         if (VisualScritingEditorMainPanel.this.editor.getGraph().isEnded()) {
                             JOptionPane.showMessageDialog(VisualScritingEditorMainPanel.this, "End reached");
                         } else {
@@ -119,13 +110,6 @@ public class VisualScritingEditorMainPanel extends JPanel {
                 };
                 o.execute();
             }
-        });
-        stopButton.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-            }
-
         });
 
         this.saveButton.addActionListener(new ActionListener() {
@@ -167,7 +151,7 @@ public class VisualScritingEditorMainPanel extends JPanel {
         return this.editor;
     }
 
-    protected void load(File file) throws Exception {
+    protected void load(File file) throws IOException {
 
         EventGraph g = new EventGraph();
         if (file != null) {

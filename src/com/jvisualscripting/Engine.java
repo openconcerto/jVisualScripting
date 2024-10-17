@@ -272,7 +272,7 @@ public class Engine {
                 }
 
                 g.start();
-            } catch (ClassNotFoundException | IOException e) {
+            } catch (IOException e) {
                 System.err.println("Error : " + e.getMessage());
             }
 

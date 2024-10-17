@@ -11,6 +11,7 @@ import com.jvisualscripting.DataPin;
 import com.jvisualscripting.Engine;
 import com.jvisualscripting.Node;
 import com.jvisualscripting.Pin.PinMode;
+import com.jvisualscripting.editor.EventGraphEditorPanel;
 
 public class StringVariable extends Node {
     private String value;
@@ -33,9 +34,22 @@ public class StringVariable extends Node {
         return this.value;
     }
 
+    @Override
+    public void computeSize() {
+        super.computeSize();
+        this.width += EventGraphEditorPanel.GRID_SIZE;
+    }
+
     public void setValue(String value) {
         this.value = value;
-        getDataOuputPin().setName(value);
+
+        String name = value;
+        if (name.length() > 12) {
+            name = name.substring(0, 12) + "…";
+        }
+        name = name.replace('\r', ' ');
+        name = name.replace('\n', ' ');
+        getDataOuputPin().setName(name.trim());
     }
 
     public StringPin getDataOuputPin() {

@@ -403,12 +403,12 @@ public abstract class Node {
     public void disconnectAllPins() {
         if (this.outputs != null) {
             for (Pin pin : this.outputs) {
-                pin.setConnectedPin(null);
+                pin.removeConnectedPins();
             }
         }
         if (this.inputs != null) {
             for (Pin pin : this.inputs) {
-                pin.setConnectedPin(null);
+                pin.removeConnectedPins();
             }
         }
     }
@@ -428,7 +428,7 @@ public abstract class Node {
         if (!dataPin.isConnected()) {
             return null;
         }
-        DataPin oPin = (DataPin) dataPin.getConnectedPin();
+        DataPin oPin = (DataPin) dataPin.getFirstConnectedPin();
         Node previousNode = oPin.getNode();
         return previousNode.getOuputValue(oPin);
 

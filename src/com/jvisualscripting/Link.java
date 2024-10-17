@@ -7,8 +7,8 @@ public class Link {
     public Link(Pin from, Pin to) {
         this.from = from;
         this.to = to;
-        to.setConnectedPin(from);
-        from.setConnectedPin(to);
+        to.addConnectedPin(from);
+        from.addConnectedPin(to);
     }
 
     public Pin getFrom() {

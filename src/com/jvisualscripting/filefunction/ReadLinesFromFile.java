@@ -6,6 +6,7 @@ import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.List;
 
 import com.jvisualscripting.DataPin;
 import com.jvisualscripting.ExecutionPin;
@@ -38,8 +39,8 @@ public class ReadLinesFromFile extends Node {
     @Override
     public boolean execute() {
         this.currentLine = null;
-        final Pin connectedPin = getOutputs().get(0).getConnectedPin();
-        if (connectedPin == null) {
+        final List<Pin> connectedPins = getOutputs().get(0).getConnectedPins();
+        if (connectedPins.isEmpty()) {
             return false;
         }
 
@@ -50,9 +51,12 @@ public class ReadLinesFromFile extends Node {
                 line = bReader.readLine();
                 this.currentLine = line;
                 if (this.currentLine != null) {
-                    boolean r = connectedPin.getNode().execute();
-                    if (!r) {
-                        return false;
+                    for (Pin connectedPin : connectedPins) {
+
+                        boolean r = connectedPin.getNode().execute();
+                        if (!r) {
+                            return false;
+                        }
                     }
                 }
             } while (line != null);
@@ -62,12 +66,17 @@ public class ReadLinesFromFile extends Node {
             return false;
         }
 
-        final Pin endPin = getOutputs().get(2).getConnectedPin();
-        if (endPin == null) {
+        final List<Pin> endPins = getOutputs().get(2).getConnectedPins();
+        if (endPins.isEmpty()) {
             return false;
         }
-
-        return endPin.getNode().execute();
+        for (Pin endPin : endPins) {
+            boolean r = endPin.getNode().execute();
+            if (!r) {
+                return false;
+            }
+        }
+        return true;
     }
 
     @Override

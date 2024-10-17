@@ -28,7 +28,7 @@ public class Branch extends FlowNode {
         if (dataPin.isConnected()) {
             BooleanPin oPin = (BooleanPin) dataPin.getConnectedOutputPin();
             Node previousNode = oPin.getNode();
-            Boolean b = (Boolean) (previousNode.getOuputValue(oPin));
+            Boolean b = (Boolean) (previousNode.getOutputValue(oPin));
             if (Boolean.TRUE.equals(b)) {
                 ExecutionPin e = ((ExecutionPin) this.outputs.get(0));
                 if (e.isConnected()) {

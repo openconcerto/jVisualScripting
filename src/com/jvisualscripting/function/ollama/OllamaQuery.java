@@ -36,7 +36,7 @@ public class OllamaQuery extends FlowNode {
     }
 
     @Override
-    public Object getOuputValue(DataPin pin) {
+    public Object getOutputValue(DataPin pin) {
         if (pin == getResponseOuputPin()) {
             return this.response;
         }

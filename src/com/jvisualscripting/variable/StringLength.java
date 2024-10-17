@@ -34,20 +34,20 @@ public class StringLength extends Node {
     }
 
     @Override
-    public Object getOuputValue(DataPin pin) {
+    public Object getOutputValue(DataPin pin) {
         StringPin input = getStringInputPin();
         if (pin == getLengthOuputPin()) {
             if (input == null) {
                 return 0;
             }
-            final String string = input.getNode().getOuputValue(input).toString();
+            final String string = input.getNode().getOutputValue(input).toString();
             return string.length();
         }
         if (pin == getEmptyOuputPin()) {
             if (input == null) {
                 return Boolean.TRUE;
             }
-            final String string = input.getNode().getOuputValue(input).toString();
+            final String string = input.getNode().getOutputValue(input).toString();
             return string.isEmpty();
         }
         throw new IllegalArgumentException(pin + " is not an declared output pin of this node");

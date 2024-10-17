@@ -80,7 +80,7 @@ public class ReadLinesFromFile extends Node {
     }
 
     @Override
-    public Object getOuputValue(DataPin pin) {
+    public Object getOutputValue(DataPin pin) {
         if (pin == getOutputs().get(1)) {
             return this.currentLine;
         }

@@ -63,6 +63,10 @@ import com.jvisualscripting.variable.StringPin;
 import com.jvisualscripting.variable.StringSplitter;
 import com.jvisualscripting.variable.StringToFloat;
 import com.jvisualscripting.variable.StringVariable;
+import com.jvisualscripting.variable.IntegerToString;
+import com.jvisualscripting.variable.FloatToString;
+import com.jvisualscripting.variable.BooleanToString;
+import com.jvisualscripting.variable.StringToInteger;
 
 // TODO : BigDecimal
 
@@ -156,7 +160,6 @@ public class Engine {
             defaultEngine.registerNodeType(4, "Execution", "Branch", Branch.class);
             defaultEngine.registerNodeType(5, "String operation", "Length", StringLength.class);
             defaultEngine.registerNodeType(6, "Integer operation", "Integer formatter", IntegerFormatter.class);
-            defaultEngine.registerNodeType(7, "String operation", "String to Float", StringToFloat.class);
             defaultEngine.registerNodeType(8, "Float operation", "Formatter", FloatFormatter.class);
             defaultEngine.registerNodeType(9, "Float operation", "Comparator", FloatComparator.class);
             defaultEngine.registerNodeType(31, "Variable", "Boolean (True)", BooleanTrueVariable.class);
@@ -197,6 +200,11 @@ public class Engine {
             defaultEngine.registerNodeType(702, "Desktop", "Open File", OpenFile.class);
             defaultEngine.registerNodeType(703, "Desktop", "Edit File", EditFile.class);
             defaultEngine.registerNodeType(704, "Desktop", "Mail", Mail.class);
+            defaultEngine.registerNodeType(800, "Conversion", "Integer To String", IntegerToString.class);
+            defaultEngine.registerNodeType(801, "Conversion", "Float To String", FloatToString.class);
+            defaultEngine.registerNodeType(802, "Conversion", "Boolean To String", BooleanToString.class);
+            defaultEngine.registerNodeType(803, "Conversion", "String To Integer", StringToInteger.class);
+            defaultEngine.registerNodeType(804, "Conversion", "String to Float", StringToFloat.class);
 
             defaultEngine.registerNodeType(10000, "Execution", "End", EndNode.class);
         }

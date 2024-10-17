@@ -45,7 +45,7 @@ public class IntegerVariable extends Node {
     }
 
     @Override
-    public Object getOuputValue(DataPin pin) {
+    public Object getOutputValue(DataPin pin) {
         if (pin != getDataOuputPin()) {
             throw new IllegalArgumentException(pin + " is not an declared output pin of this node");
         }

@@ -21,7 +21,7 @@ public class IndexOf extends Node {
     }
 
     @Override
-    public Object getOuputValue(DataPin pin) {
+    public Object getOutputValue(DataPin pin) {
         if (pin == getOutputs().get(0)) {
             // First
             String in1 = getInputValue(0).toString();

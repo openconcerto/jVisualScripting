@@ -17,11 +17,11 @@ import javax.swing.UIManager;
 
 import com.jvisualscripting.Engine;
 
-public class VisualScritingEditor extends JFrame {
+public class VisualScriptingEditor extends JFrame {
 
     VisualScritingEditorMainPanel visualEditorPanel;
 
-    public VisualScritingEditor(Engine engine) {
+    public VisualScriptingEditor(Engine engine) {
         setTitle("jVisualScripting Editor");
         this.visualEditorPanel = new VisualScritingEditorMainPanel(engine);
         setContentPane(this.visualEditorPanel);
@@ -58,8 +58,8 @@ public class VisualScritingEditor extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 try {
                     // TODO ask if not saved
-                    VisualScritingEditor.this.visualEditorPanel.load(null);
-                    VisualScritingEditor.this.visualEditorPanel.getEditor().addStartAndEndNodes();
+                    VisualScriptingEditor.this.visualEditorPanel.load(null);
+                    VisualScriptingEditor.this.visualEditorPanel.getEditor().addStartAndEndNodes();
 
                 } catch (Exception e1) {
                     e1.printStackTrace();
@@ -76,7 +76,7 @@ public class VisualScritingEditor extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 // TODO ask if not saved
-                VisualScritingEditor.this.visualEditorPanel.load();
+                VisualScriptingEditor.this.visualEditorPanel.load();
 
             }
         });
@@ -90,7 +90,7 @@ public class VisualScritingEditor extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    VisualScritingEditor.this.visualEditorPanel.save();
+                    VisualScriptingEditor.this.visualEditorPanel.save();
                 } catch (IOException e1) {
                     e1.printStackTrace();
                 }
@@ -105,7 +105,7 @@ public class VisualScritingEditor extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    VisualScritingEditor.this.visualEditorPanel.saveAs();
+                    VisualScriptingEditor.this.visualEditorPanel.saveAs();
                 } catch (IOException e1) {
                     e1.printStackTrace();
                 }
@@ -137,7 +137,7 @@ public class VisualScritingEditor extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    VisualScritingEditor.this.visualEditorPanel.getEditor().getEditor().undo();
+                    VisualScriptingEditor.this.visualEditorPanel.getEditor().getEditor().undo();
                 } catch (IOException e1) {
                     e1.printStackTrace();
                 }
@@ -152,7 +152,7 @@ public class VisualScritingEditor extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    VisualScritingEditor.this.visualEditorPanel.getEditor().getEditor().redo();
+                    VisualScriptingEditor.this.visualEditorPanel.getEditor().getEditor().redo();
                 } catch (IOException e1) {
                     e1.printStackTrace();
                 }
@@ -178,7 +178,7 @@ public class VisualScritingEditor extends JFrame {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                JOptionPane.showMessageDialog(VisualScritingEditor.this, "jVisualScripting editor"
+                JOptionPane.showMessageDialog(VisualScriptingEditor.this, "jVisualScripting editor"
                         + " is a simple workflow editor for jVisualScripting.\n\njVisualScripting is an OpenSource software released under LGPL licence.\nIt's part of the OpenConcerto ERP.\n \nSource code, binaries and issues tracking are hosted on GitHub:\nhttps://github.com/openconcerto/jVisualScripting\n\n",
                         "About jVisualScripting editor", JOptionPane.PLAIN_MESSAGE);
 
@@ -200,7 +200,7 @@ public class VisualScritingEditor extends JFrame {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-                final VisualScritingEditor f = new VisualScritingEditor(Engine.getDefault());
+                final VisualScriptingEditor f = new VisualScriptingEditor(Engine.getDefault());
                 try {
                     if (args.length > 0) {
                         String script = args[0];

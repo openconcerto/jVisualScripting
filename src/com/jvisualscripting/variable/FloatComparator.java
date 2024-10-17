@@ -24,7 +24,7 @@ public class FloatComparator extends Node {
     }
 
     @Override
-    public Object getOuputValue(DataPin pin) {
+    public Object getOutputValue(DataPin pin) {
         if (pin == getDataOuputPin()) {
             Pin pA = ((DataPin) getInputs().get(0)).getConnectedOutputPin();
             if (pA == null) {
@@ -34,8 +34,8 @@ public class FloatComparator extends Node {
             if (pB == null) {
                 return null;
             }
-            float vA = (Float) pA.getNode().getOuputValue((DataPin) pA);
-            float vB = (Float) pB.getNode().getOuputValue((DataPin) pB);
+            float vA = (Float) pA.getNode().getOutputValue((DataPin) pA);
+            float vB = (Float) pB.getNode().getOutputValue((DataPin) pB);
             return vA > vB;
         }
 

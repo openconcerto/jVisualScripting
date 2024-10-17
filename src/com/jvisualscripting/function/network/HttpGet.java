@@ -71,7 +71,7 @@ public class HttpGet extends FlowNode {
     }
 
     @Override
-    public Object getOuputValue(DataPin pin) {
+    public Object getOutputValue(DataPin pin) {
         if (pin == getContentOuputPin()) {
             return this.contentStr;
         }

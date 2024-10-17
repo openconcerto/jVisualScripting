@@ -58,7 +58,7 @@ public class FileSaveString extends FlowNode {
         if (dataPin.isConnected()) {
             DataPin oPin = dataPin.getConnectedOutputPin();
             Node previousNode = oPin.getNode();
-            Object value = previousNode.getOuputValue(oPin);
+            Object value = previousNode.getOutputValue(oPin);
             return value.toString();
         }
         return null;
@@ -69,7 +69,7 @@ public class FileSaveString extends FlowNode {
         if (dataPin.isConnected()) {
             DataPin oPin = dataPin.getConnectedOutputPin();
             Node previousNode = oPin.getNode();
-            return (File) previousNode.getOuputValue(oPin);
+            return (File) previousNode.getOutputValue(oPin);
         }
         return null;
     }

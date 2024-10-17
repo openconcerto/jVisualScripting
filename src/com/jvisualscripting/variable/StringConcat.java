@@ -24,7 +24,7 @@ public class StringConcat extends Node {
     }
 
     @Override
-    public Object getOuputValue(DataPin pin) {
+    public Object getOutputValue(DataPin pin) {
         final StringBuilder result = new StringBuilder();
         final int size = this.inputs.size();
         final Object separator = getInputValue(0);

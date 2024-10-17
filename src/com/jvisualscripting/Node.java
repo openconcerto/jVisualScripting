@@ -185,7 +185,7 @@ public abstract class Node {
         return this.outputs.size();
     }
 
-    public Object getOuputValue(DataPin pin) {
+    public Object getOutputValue(DataPin pin) {
         return null;
     }
 
@@ -430,7 +430,7 @@ public abstract class Node {
         }
         DataPin oPin = (DataPin) dataPin.getFirstConnectedPin();
         Node previousNode = oPin.getNode();
-        return previousNode.getOuputValue(oPin);
+        return previousNode.getOutputValue(oPin);
 
     }
 

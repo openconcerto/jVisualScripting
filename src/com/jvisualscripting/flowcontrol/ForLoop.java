@@ -28,11 +28,11 @@ public class ForLoop extends FlowNode {
         boolean succeed = false;
         if (this.getInputs().get(1).isConnected()) {
             IntegerPin in = (IntegerPin) ((DataPin) this.getInputs().get(1)).getConnectedOutputPin();
-            firstIndex = (Integer) in.getNode().getOuputValue(in);
+            firstIndex = (Integer) in.getNode().getOutputValue(in);
         }
         if (this.getInputs().get(2).isConnected()) {
             IntegerPin in = (IntegerPin) ((DataPin) this.getInputs().get(2)).getConnectedOutputPin();
-            lastIndex = (Integer) in.getNode().getOuputValue(in);
+            lastIndex = (Integer) in.getNode().getOutputValue(in);
         }
         for (int i = firstIndex; i <= lastIndex; i++) {
             this.index = i;
@@ -58,7 +58,7 @@ public class ForLoop extends FlowNode {
     }
 
     @Override
-    public Object getOuputValue(DataPin pin) {
+    public Object getOutputValue(DataPin pin) {
         if (pin == this.getOutputs().get(1)) {
             return this.index;
         }

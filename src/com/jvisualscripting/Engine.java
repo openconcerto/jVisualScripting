@@ -69,7 +69,7 @@ import com.jvisualscripting.variable.StringVariable;
 // TODO : JSOUP
 
 public class Engine {
-    public static final String DEFAULT_VERSION = "1.3";
+    public static final String DEFAULT_VERSION = "1.4";
     private static Engine defaultEngine;
     private Map<Integer, Class<? extends Pin>> mapTypePin = new HashMap<>();
     private Map<Class<? extends Pin>, Integer> mapClassPin = new HashMap<>();

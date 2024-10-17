@@ -24,14 +24,14 @@ public class IntegerFormatter extends Node {
     }
 
     @Override
-    public Object getOuputValue(DataPin pin) {
+    public Object getOutputValue(DataPin pin) {
         if (pin == getDataOuputPin()) {
             Pin p = getIntegerInputPin().getConnectedOutputPin();
             if (p == null) {
                 return "";
             }
             IntegerPin connectedPin = (IntegerPin) p;
-            return String.valueOf((connectedPin.getNode().getOuputValue(connectedPin)));
+            return String.valueOf((connectedPin.getNode().getOutputValue(connectedPin)));
         }
 
         throw new IllegalArgumentException(pin + " is not an declared output pin of this node");

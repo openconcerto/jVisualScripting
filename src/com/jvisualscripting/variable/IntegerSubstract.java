@@ -22,7 +22,7 @@ public class IntegerSubstract extends Node {
     }
 
     @Override
-    public Object getOuputValue(DataPin pin) {
+    public Object getOutputValue(DataPin pin) {
         int total = 0;
 
         Object o1 = getInputValue(0);

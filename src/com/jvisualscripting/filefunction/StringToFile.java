@@ -30,7 +30,7 @@ public class StringToFile extends Node {
     }
 
     @Override
-    public Object getOuputValue(DataPin pin) {
+    public Object getOutputValue(DataPin pin) {
         if (pin == getFilePin()) {
             return getFile();
         } else if (pin == getOutputs().get(1)) {
@@ -59,7 +59,7 @@ public class StringToFile extends Node {
             return null;
         }
         StringPin connectedPin = (StringPin) p;
-        return new File((String) connectedPin.getNode().getOuputValue(connectedPin));
+        return new File((String) connectedPin.getNode().getOutputValue(connectedPin));
     }
 
     public StringPin getPathInputPin() {

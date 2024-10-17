@@ -23,7 +23,7 @@ public class BooleanAnd extends Node {
     }
 
     @Override
-    public Object getOuputValue(DataPin pin) {
+    public Object getOutputValue(DataPin pin) {
         boolean result = true;
         final int size = this.inputs.size();
         for (int i = 0; i < size; i++) {

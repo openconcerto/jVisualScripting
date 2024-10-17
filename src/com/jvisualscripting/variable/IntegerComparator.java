@@ -24,7 +24,7 @@ public class IntegerComparator extends Node {
     }
 
     @Override
-    public Object getOuputValue(DataPin pin) {
+    public Object getOutputValue(DataPin pin) {
         if (pin == getDataOuputPin()) {
             Pin pA = ((DataPin) getInputs().get(0)).getConnectedOutputPin();
             if (pA == null) {
@@ -34,8 +34,8 @@ public class IntegerComparator extends Node {
             if (pB == null) {
                 return null;
             }
-            int vA = (Integer) pA.getNode().getOuputValue((DataPin) pA);
-            int vB = (Integer) pB.getNode().getOuputValue((DataPin) pB);
+            int vA = (Integer) pA.getNode().getOutputValue((DataPin) pA);
+            int vB = (Integer) pB.getNode().getOutputValue((DataPin) pB);
             return vA > vB;
         }
 

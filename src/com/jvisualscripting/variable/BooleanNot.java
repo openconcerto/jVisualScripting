@@ -21,7 +21,7 @@ public class BooleanNot extends Node {
     }
 
     @Override
-    public Object getOuputValue(DataPin pin) {
+    public Object getOutputValue(DataPin pin) {
         if (pin == getOutputs().get(0)) {
             return !(Boolean) getInputValue(0);
         }

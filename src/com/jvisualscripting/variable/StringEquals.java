@@ -39,27 +39,27 @@ public class StringEquals extends Node {
     }
 
     @Override
-    public Object getOuputValue(DataPin pin) {
+    public Object getOutputValue(DataPin pin) {
 
         if (pin == getLengthOuputPinEquals()) {
             if (!canBeExecuted()) {
                 return Boolean.FALSE;
             }
             StringPin input1 = getStringInputPin1();
-            final String string1 = input1.getNode().getOuputValue(input1).toString();
+            final String string1 = input1.getNode().getOutputValue(input1).toString();
 
             StringPin input2 = getStringInputPin2();
-            final String string2 = input2.getNode().getOuputValue(input2).toString();
+            final String string2 = input2.getNode().getOutputValue(input2).toString();
             return string2.equals(string1);
         } else if (pin == getLengthOuputPinNotEquals()) {
             if (!canBeExecuted()) {
                 return Boolean.FALSE;
             }
             StringPin input1 = getStringInputPin1();
-            final String string1 = input1.getNode().getOuputValue(input1).toString();
+            final String string1 = input1.getNode().getOutputValue(input1).toString();
 
             StringPin input2 = getStringInputPin2();
-            final String string2 = input2.getNode().getOuputValue(input2).toString();
+            final String string2 = input2.getNode().getOutputValue(input2).toString();
             return !string2.equals(string1);
         }
 

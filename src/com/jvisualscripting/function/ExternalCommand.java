@@ -38,7 +38,7 @@ public class ExternalCommand extends FlowNode {
     }
 
     @Override
-    public Object getOuputValue(DataPin pin) {
+    public Object getOutputValue(DataPin pin) {
         if (pin == getOutOuputPin()) {
             return this.out;
         }

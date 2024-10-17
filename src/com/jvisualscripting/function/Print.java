@@ -48,7 +48,7 @@ public class Print extends FlowNode {
         if (dataPin.isConnected()) {
             DataPin oPin = dataPin.getConnectedOutputPin();
             Node previousNode = oPin.getNode();
-            Object value = previousNode.getOuputValue(oPin);
+            Object value = previousNode.getOutputValue(oPin);
             if (value == null) {
                 return null;
             }

@@ -20,7 +20,7 @@ public class CurrentDate extends Node {
     }
 
     @Override
-    public Object getOuputValue(DataPin pin) {
+    public Object getOutputValue(DataPin pin) {
         int index = getOutputs().indexOf(pin);
         Calendar c = Calendar.getInstance();
         if (index == 0) {

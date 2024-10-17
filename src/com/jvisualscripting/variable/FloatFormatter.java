@@ -25,14 +25,14 @@ public class FloatFormatter extends Node {
     }
 
     @Override
-    public Object getOuputValue(DataPin pin) {
+    public Object getOutputValue(DataPin pin) {
         if (pin == getDataOuputPin()) {
             Pin p = getIntegerInputPin().getConnectedOutputPin();
             if (p == null) {
                 return "";
             }
             FloatPin connectedPin = (FloatPin) p;
-            Float value = ((Float) connectedPin.getNode().getOuputValue(connectedPin));
+            Float value = ((Float) connectedPin.getNode().getOutputValue(connectedPin));
 
             DecimalFormat df = new DecimalFormat("0");
             df.setMaximumFractionDigits(6);

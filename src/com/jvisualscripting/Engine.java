@@ -62,6 +62,7 @@ import com.jvisualscripting.variable.StringParameter;
 import com.jvisualscripting.variable.StringPin;
 import com.jvisualscripting.variable.StringSplitter;
 import com.jvisualscripting.variable.StringToFloat;
+import com.jvisualscripting.variable.StringToInteger;
 import com.jvisualscripting.variable.StringVariable;
 
 // TODO : BigDecimal
@@ -69,7 +70,7 @@ import com.jvisualscripting.variable.StringVariable;
 // TODO : JSOUP
 
 public class Engine {
-    public static final String DEFAULT_VERSION = "1.4";
+    public static final String DEFAULT_VERSION = "1.5";
     private static Engine defaultEngine;
     private Map<Integer, Class<? extends Pin>> mapTypePin = new HashMap<>();
     private Map<Class<? extends Pin>, Integer> mapClassPin = new HashMap<>();
@@ -167,17 +168,14 @@ public class Engine {
             defaultEngine.registerNodeType(36, "String operation", "Splitter", StringSplitter.class);
             defaultEngine.registerNodeType(37, "Float operation", "Splitter", FloatSplitter.class);
             defaultEngine.registerNodeType(38, "Integer operation", "Splitter", IntegerSplitter.class);
-            defaultEngine.registerNodeType(38, "String operation", "Concatenate", StringConcat.class);
-
+            defaultEngine.registerNodeType(39, "String operation", "Concatenate", StringConcat.class);
             defaultEngine.registerNodeType(40, "Execution", "Delay", Delay.class);
             defaultEngine.registerNodeType(41, "Execution", "For Loop", ForLoop.class);
             defaultEngine.registerNodeType(42, "Time", "Current time", CurrentTime.class);
             defaultEngine.registerNodeType(43, "Time", "Current date", CurrentDate.class);
             defaultEngine.registerNodeType(44, "String operation", "Equals", StringEquals.class);
-
             defaultEngine.registerNodeType(45, "Integer operation", "Add", IntegerAdder.class);
             defaultEngine.registerNodeType(46, "Integer operation", "Multiply", IntegerMultiplier.class);
-
             defaultEngine.registerNodeType(47, "Variable", "Parameter", StringParameter.class);
             defaultEngine.registerNodeType(48, "Bool operation", "And", BooleanAnd.class);
             defaultEngine.registerNodeType(49, "Bool operation", "Or", BooleanOr.class);
@@ -186,6 +184,7 @@ public class Engine {
             defaultEngine.registerNodeType(52, "Integer operation", "Divide", IntegerDivider.class);
             defaultEngine.registerNodeType(53, "Integer operation", "Modulus", IntegerModulus.class);
             defaultEngine.registerNodeType(54, "Integer operation", "Comparator", IntegerComparator.class);
+            defaultEngine.registerNodeType(55, "String operation", "String to Integer", StringToInteger.class);
             defaultEngine.registerNodeType(100, "Execution", "External Command", ExternalCommand.class);
             defaultEngine.registerNodeType(200, "Variable", "File", StringToFile.class);
             defaultEngine.registerNodeType(201, "IO", "Save String to File", FileSaveString.class);

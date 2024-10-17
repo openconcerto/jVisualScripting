@@ -25,7 +25,7 @@ public class StringSplitter extends Node {
     }
 
     @Override
-    public Object getOuputValue(DataPin pin) {
+    public Object getOutputValue(DataPin pin) {
         final Object inputValue = getInputValue(0);
         if (inputValue == null) {
             return "";

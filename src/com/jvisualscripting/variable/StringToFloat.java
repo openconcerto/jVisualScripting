@@ -28,14 +28,14 @@ public class StringToFloat extends Node {
     }
 
     @Override
-    public Object getOuputValue(DataPin pin) {
+    public Object getOutputValue(DataPin pin) {
         if (pin == getDataOuputPin()) {
             Pin p = getStringInputPin().getConnectedOutputPin();
             if (p == null) {
                 return "";
             }
             StringPin connectedPin = (StringPin) p;
-            return Float.parseFloat(((String) connectedPin.getNode().getOuputValue(connectedPin)));
+            return Float.parseFloat(((String) connectedPin.getNode().getOutputValue(connectedPin)));
         }
 
         throw new IllegalArgumentException(pin + " is not an declared output pin of this node");

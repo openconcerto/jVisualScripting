@@ -32,16 +32,16 @@ Additionally, the engine can be embedded in your Java application or run workflo
 
 # Execution of a workflow in command line 
 ```
-java -jar jVisualScripting-1.3.jar helloworld.jvsz
+java -jar jVisualScripting-1.4.jar helloworld.jvsz
 ```
 You can pass parameters using key=value format (use Parameter nodes to access them), for example
 ```
-java -jar jVisualScripting-1.3.jar helloworld.jvsz name=you
+java -jar jVisualScripting-1.4.jar helloworld.jvsz name=you
 ```
 
 # Embbeding jVisualScript
 
-Just add jVisualScripting-1.3.jar in your classpath.
+Just add jVisualScripting-1.4.jar in your classpath.
 
 You can build a workflow using the EventGraph class.
 
